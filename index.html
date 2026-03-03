@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FireCoding | Catálogo de Landing Pages</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --fire-orange: #FF5E1A;
+      --fire-amber:  #FFA040;
+      --fire-red:    #E53A1A;
+      --dark-bg:     #0A0A0C;
+      --dark-surface:#111116;
+      --dark-card:   #16161D;
+      --dark-border: #222230;
+      --text-primary:#F4F4F6;
+      --text-muted:  #7B7B90;
+      --text-dim:    #3E3E52;
+      --glow-orange: rgba(255,94,26,0.35);
+      --glow-soft:   rgba(255,94,26,0.12);
+      --blue-soft:   #218fcf;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--dark-bg); color: var(--text-primary); overflow-x: hidden; cursor: none; }
+    .cursor { width: 12px; height: 12px; background: var(--fire-orange); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.08s ease, width 0.2s, height 0.2s; mix-blend-mode: screen; }
+    .cursor-ring { width: 36px; height: 36px; border: 1.5px solid rgba(255,94,26,0.5); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: transform 0.18s ease, width 0.25s, height 0.25s; }
+    body::before { content:''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; opacity: 0.4; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(1.5rem,5vw,4rem); height: 70px; background: rgba(10,10,12,0.88); backdrop-filter: blur(20px); border-bottom: 1px solid var(--dark-border); }
+    .nav-logo { display: flex; align-items: center; gap: 0.1rem; text-decoration: none; }
+    .nav-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--fire-red), var(--fire-orange)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 0 16px var(--glow-orange); }
+    .nav-logo span { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.20rem; color: var(--fire-orange); letter-spacing: -0.02em; }
+    .nav-logo span em { color: var(--blue-soft); font-style: normal; }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-cta { background: var(--fire-orange) !important; color: #fff !important; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 600 !important; transition: background 0.2s, box-shadow 0.2s !important; }
+    .nav-cta:hover { background: var(--fire-red) !important; box-shadow: 0 0 18px var(--glow-orange); }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; background: none; border: none; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; transition: 0.3s; }
+    .mobile-menu { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,12,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--dark-border); padding: 1.5rem clamp(1.5rem,5vw,4rem); flex-direction: column; gap: 1.2rem; z-index: 99; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { color: var(--text-muted); text-decoration: none; font-size: 1rem; font-weight: 500; transition: color 0.2s; padding: 0.3rem 0; }
+    .mobile-menu a:hover { color: var(--text-primary); }
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px clamp(1.5rem,6vw,6rem) 80px; position: relative; overflow: hidden; }
+    .hero-bg-glow { position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 900px; height: 600px; background: radial-gradient(ellipse, rgba(255,94,26,0.18) 0%, transparent 70%); pointer-events: none; }
+    .hero-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,94,26,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,94,26,0.04) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%); pointer-events: none; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,94,26,0.12); border: 1px solid rgba(255,94,26,0.3); border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; color: var(--fire-amber); text-transform: uppercase; margin-bottom: 1.8rem; animation: fadeUp 0.6s ease both; }
+    .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.8rem,7vw,6rem); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; max-width: 900px; animation: fadeUp 0.7s 0.1s ease both; }
+    .hero h1 .line-fire { color: var(--fire-orange); }
+    .hero h1 .line-glow { -webkit-text-stroke: 1px rgba(255,94,26,0.4); color: transparent; }
+    .hero-sub { margin-top: 1.5rem; font-size: clamp(1rem,2vw,1.2rem); color: var(--text-muted); max-width: 580px; line-height: 1.7; font-weight: 300; animation: fadeUp 0.7s 0.2s ease both; }
+    .hero-actions { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.7s 0.3s ease both; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--fire-orange), var(--fire-red)); color: #fff; text-decoration: none; padding: 0.85rem 2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; border: none; cursor: none; box-shadow: 0 0 24px var(--glow-orange), 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px var(--glow-orange), 0 8px 30px rgba(0,0,0,0.5); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: var(--text-primary); padding: 0.85rem 2rem; border-radius: 8px; border: 1px solid var(--dark-border); font-weight: 500; font-size: 0.95rem; text-decoration: none; cursor: none; transition: border-color 0.2s, background 0.2s; }
+    .btn-secondary:hover { border-color: var(--fire-orange); background: var(--glow-soft); }
+    .hero-stats { margin-top: 4.5rem; display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.7s 0.4s ease both; }
+    .hero-stat { text-align: center; }
+    .hero-stat strong { display: block; font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--fire-orange); line-height: 1; }
+    .hero-stat span { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; display: block; }
+    .hero-divider { width: 1px; height: 40px; background: var(--dark-border); align-self: center; }
+    .scroll-indicator { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.5rem; animation: fadeUp 1s 0.8s ease both; }
+    .scroll-indicator span { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+    .scroll-indicator .arrow { width: 20px; height: 20px; border-right: 2px solid var(--text-dim); border-bottom: 2px solid var(--text-dim); transform: rotate(45deg); animation: bounce 1.5s infinite; }
+    section { position: relative; z-index: 1; }
+    .section-label { display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fire-orange); margin-bottom: 0.8rem; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem,4vw,3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    .section-sub { color: var(--text-muted); font-size: 1rem; line-height: 1.7; font-weight: 300; max-width: 520px; margin-top: 0.8rem; }
+    .catalog-section { padding: clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem); }
+    .catalog-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem; }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
+    .filter-btn { padding: 0.45rem 1.1rem; border-radius: 100px; border: 1px solid var(--dark-border); background: transparent; color: var(--text-muted); font-size: 0.82rem; font-weight: 500; cursor: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--fire-orange); color: var(--fire-orange); background: var(--glow-soft); }
+    .catalog-count { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; }
+    .catalog-count strong { color: var(--fire-orange); }
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+    .card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 14px; overflow: hidden; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s; cursor: none; animation: fadeUp 0.5s ease both; }
+    .card:hover { transform: translateY(-6px); border-color: rgba(255,94,26,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px var(--glow-soft); }
+    .card-preview { position: relative; overflow: hidden; height: 220px; background: var(--dark-surface); }
+    .card-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease, filter 0.3s; filter: brightness(0.9); }
+    .card:hover .card-preview img { transform: scale(1.05); filter: brightness(1); }
+    .card-badge { position: absolute; top: 12px; left: 12px; padding: 0.28rem 0.7rem; border-radius: 100px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .badge-new { background: rgba(255,94,26,0.9); color: #fff; }
+    .badge-popular { background: rgba(255,160,64,0.9); color: #0a0a0c; }
+    .badge-premium { background: rgba(255,255,255,0.15); color: #fff; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.2); }
+    .card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,12,0.9) 0%, transparent 60%); display: flex; align-items: flex-end; justify-content: flex-end; padding: 1rem; opacity: 0; transition: opacity 0.3s; }
+    .card:hover .card-overlay { opacity: 1; }
+    .card-preview-btn { display: flex; align-items: center; gap: 0.4rem; background: var(--fire-orange); color: #fff; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; cursor: none; transition: background 0.2s; }
+    .card-preview-btn:hover { background: var(--fire-red); }
+    .card-body { padding: 1.2rem 1.4rem 1.5rem; }
+    .card-category { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fire-orange); margin-bottom: 0.4rem; }
+    .card-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.5rem; }
+    .card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; font-weight: 300; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .tag { padding: 0.22rem 0.6rem; background: rgba(255,94,26,0.08); border: 1px solid rgba(255,94,26,0.15); border-radius: 4px; font-size: 0.68rem; color: var(--fire-amber); font-weight: 500; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--dark-border); }
+    .card-footer .price { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+    .card-footer .price span { font-size: 0.75rem; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+    .card-action { display: inline-flex; align-items: center; gap: 0.35rem; background: transparent; color: var(--fire-orange); border: 1px solid rgba(255,94,26,0.3); border-radius: 6px; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; cursor: none; transition: all 0.2s; text-decoration: none; font-family: 'DM Sans', sans-serif; }
+    .card-action:hover { background: var(--fire-orange); color: #fff; border-color: var(--fire-orange); }
+    .features-section { padding: clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem); background: var(--dark-surface); border-top: 1px solid var(--dark-border); border-bottom: 1px solid var(--dark-border); }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3.5rem; }
+    .feature-card { padding: 1.8rem; background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 12px; transition: border-color 0.25s, transform 0.25s; position: relative; overflow: hidden; }
+    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--fire-orange), transparent); opacity: 0; transition: opacity 0.3s; }
+    .feature-card:hover { border-color: rgba(255,94,26,0.3); transform: translateY(-4px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon { width: 44px; height: 44px; background: rgba(255,94,26,0.1); border: 1px solid rgba(255,94,26,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 1.2rem; }
+    .feature-card h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+    .nav-logo-img { width: 60px; height: auto; object-fit: contain; }
+    .testimonials-section { padding: clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 3.5rem; }
+    .testimonial-card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 14px; padding: 1.8rem; transition: border-color 0.2s; }
+    .testimonial-card:hover { border-color: rgba(255,94,26,0.3); }
+    .stars { color: var(--fire-amber); font-size: 0.9rem; margin-bottom: 1rem; letter-spacing: 2px; }
+    .testimonial-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; font-weight: 300; font-style: italic; margin-bottom: 1.4rem; }
+    .testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--fire-orange), var(--fire-red)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; color: #fff; flex-shrink: 0; }
+    .author-info strong { display: block; font-size: 0.88rem; font-weight: 600; }
+    .author-info span { font-size: 0.75rem; color: var(--text-muted); }
+    .cta-section { padding: clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem); background: var(--dark-surface); border-top: 1px solid var(--dark-border); }
+    .cta-box { max-width: 760px; margin: 0 auto; text-align: center; position: relative; }
+    .cta-box::before { content:''; position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(255,94,26,0.12) 0%, transparent 70%); pointer-events: none; }
+    .cta-box h2 { font-family: 'Syne', sans-serif; font-size: clamp(2rem,5vw,3.5rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; margin-bottom: 1.2rem; }
+    .cta-box h2 span { color: var(--fire-orange); }
+    .cta-box p { font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 480px; margin: 0 auto 2.5rem; }
+    .cta-form { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+    .cta-input { flex: 1; min-width: 240px; background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 8px; padding: 0.85rem 1.2rem; color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .cta-input::placeholder { color: var(--text-dim); }
+    .cta-input:focus { border-color: var(--fire-orange); }
+    footer { padding: 3rem clamp(1.5rem,5vw,5rem); border-top: 1px solid var(--dark-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+    .footer-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+    .footer-brand-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--fire-red), var(--fire-orange)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    .footer-brand span { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--text-primary); }
+    .footer-brand span em { color: var(--fire-orange); font-style: normal; }
+    .footer-logo-img { height: 100px; width: auto; display: block; transition: transform 0.3s ease }
+    .footer-logo-img:hover { transform: scale(1.05); }
+    footer p { font-size: 0.8rem; color: var(--text-dim); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 0.8rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--fire-orange); }
+    .whatsapp-float { position: fixed; bottom: 1.8rem; right: 1.8rem; width: 52px; height: 52px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.4); z-index: 200; text-decoration: none; cursor: none; transition: transform 0.2s, box-shadow 0.2s; }
+    .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
+    .whatsapp-float svg { width: 26px; height: 26px; fill: white; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%, 100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(5px); } }
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .hero-divider { display: none; }
+      .hero-stats { gap: 2rem; }
+      footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+<img src="C:\Users\Usuário\Desktop\catalogo\logo-firecoding.png" alt="Logo" class="nav-logo-img">    
+<span>Fire<em>Coding</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="#catalogo">Catálogo</a>
+    <a href="#vantagens">Vantagens</a>
+    <a href="#depoimentos">Depoimentos</a>
+    <a href="https://firecodingsite.vercel.app/" target="_blank">Site Principal</a>
+    <a href="#contato" class="nav-cta">Solicitar Orçamento</a>
+  </div>
+  <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#catalogo" onclick="toggleMenu()">Catálogo</a>
+  <a href="#vantagens" onclick="toggleMenu()">Vantagens</a>
+  <a href="#depoimentos" onclick="toggleMenu()">Depoimentos</a>
+  <a href="https://firecodingsite.vercel.app/" target="_blank">Site Principal</a>
+  <a href="#contato" onclick="toggleMenu()">Solicitar Orçamento</a>
+</div>
+
+<section class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-bg-grid"></div>
+  <div class="hero-badge">🔥 Novos modelos disponíveis</div>
+  <h1>Escolha sua<br><span class="line-fire">Landing Page</span><br><span class="line-glow">Profissional</span></h1>
+  <p class="hero-sub">Modelos de alta conversão desenvolvidos pela FireCoding. Escolha, personalize e lance seu projeto em tempo recorde.</p>
+  <div class="hero-actions">
+    <a href="#catalogo" class="btn-primary">
+      Ver Catálogo
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="https://wa.me/5574988482293" target="_blank" class="btn-secondary">Falar no WhatsApp</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><strong>50+</strong><span>Modelos disponíveis</span></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><strong>100%</strong><span>Responsivos</span></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><strong>72h</strong><span>Prazo de entrega</span></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><strong>98%</strong><span>Satisfação</span></div>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<section class="catalog-section" id="catalogo">
+  <div class="catalog-header">
+    <div>
+      <span class="section-label">Catálogo</span>
+      <h2 class="section-title">Modelos prontos para<br>você decolar</h2>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterCards('todos', this)">Todos</button>
+        <button class="filter-btn" onclick="filterCards('negocio', this)">Negócios</button>
+        <button class="filter-btn" onclick="filterCards('saude', this)">Saúde & Bem-estar</button>
+        <button class="filter-btn" onclick="filterCards('tech', this)">Tech & SaaS</button>
+        <button class="filter-btn" onclick="filterCards('ecommerce', this)">E-commerce</button>
+        <button class="filter-btn" onclick="filterCards('evento', this)">Eventos</button>
+        <button class="filter-btn" onclick="filterCards('educacao', this)">Educação</button>
+      </div>
+    </div>
+    <p class="catalog-count">Exibindo <strong id="cardCount">12</strong> modelos</p>
+  </div>
+  <div class="catalog-grid" id="catalogGrid">
+
+    <div class="card reveal" data-cat="negocio">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Agência Digital">
+        <span class="card-badge badge-popular">Popular</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Negócios</div>
+        <h3 class="card-title">Agência Digital Premium</h3>
+        <p class="card-desc">Design arrojado com seções de portfólio, depoimentos e formulário de captação de leads.</p>
+        <div class="card-tags"><span class="tag">Dark Theme</span><span class="tag">Animações</span><span class="tag">CTA Otimizado</span></div>
+        <div class="card-footer"><div class="price">R$ 490 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="saude">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" alt="Clínica">
+        <span class="card-badge badge-new">Novo</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Saúde & Bem-estar</div>
+        <h3 class="card-title">Clínica & Consultório</h3>
+        <p class="card-desc">Visual limpo e confiável para médicos, psicólogos, nutricionistas e profissionais de saúde.</p>
+        <div class="card-tags"><span class="tag">Agendamento</span><span class="tag">WhatsApp</span><span class="tag">Mobile First</span></div>
+        <div class="card-footer"><div class="price">R$ 390 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="tech">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="SaaS">
+        <span class="card-badge badge-premium">Premium</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Tech & SaaS</div>
+        <h3 class="card-title">SaaS Launch Page</h3>
+        <p class="card-desc">Apresente seu software com hero impactante, features, preços e prova social.</p>
+        <div class="card-tags"><span class="tag">Pricing Table</span><span class="tag">FAQ</span><span class="tag">Dark UI</span></div>
+        <div class="card-footer"><div class="price">R$ 690 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="ecommerce">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=80" alt="Produto">
+        <span class="card-badge badge-popular">Popular</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">E-commerce</div>
+        <h3 class="card-title">Página de Produto</h3>
+        <p class="card-desc">Alta conversão com galeria, benefícios, depoimentos, gatilhos mentais e checkout.</p>
+        <div class="card-tags"><span class="tag">Gatilhos Mentais</span><span class="tag">Urgência</span><span class="tag">Prova Social</span></div>
+        <div class="card-footer"><div class="price">R$ 490 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="evento">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80" alt="Evento">
+        <span class="card-badge badge-new">Novo</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Eventos</div>
+        <h3 class="card-title">Evento & Congresso</h3>
+        <p class="card-desc">Countdown, programação, palestrantes, ingressos e formulário de inscrição integrado.</p>
+        <div class="card-tags"><span class="tag">Countdown</span><span class="tag">Inscrição</span><span class="tag">Palestrantes</span></div>
+        <div class="card-footer"><div class="price">R$ 540 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="educacao">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&q=80" alt="Curso">
+        <span class="card-badge badge-popular">Popular</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Educação</div>
+        <h3 class="card-title">Lançamento de Curso</h3>
+        <p class="card-desc">Ideal para infoprodutos. Copywriting persuasivo, módulos, bônus, garantia e CTA poderoso.</p>
+        <div class="card-tags"><span class="tag">Copywriting</span><span class="tag">Bônus</span><span class="tag">Garantia</span></div>
+        <div class="card-footer"><div class="price">R$ 590 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="negocio">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80" alt="Consultoria">
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Negócios</div>
+        <h3 class="card-title">Consultoria & Mentoria</h3>
+        <p class="card-desc">Apresente sua autoridade, cases de sucesso, metodologia e agenda de sessões de descoberta.</p>
+        <div class="card-tags"><span class="tag">Autoridade</span><span class="tag">Cases</span><span class="tag">Calendly</span></div>
+        <div class="card-footer"><div class="price">R$ 450 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="saude">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80" alt="Personal">
+        <span class="card-badge badge-new">Novo</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Saúde & Bem-estar</div>
+        <h3 class="card-title">Personal Trainer</h3>
+        <p class="card-desc">Transformação física em destaque. Resultados, planos, depoimentos e cadastro de alunos.</p>
+        <div class="card-tags"><span class="tag">Resultados</span><span class="tag">Planos</span><span class="tag">Dark Mode</span></div>
+        <div class="card-footer"><div class="price">R$ 390 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="tech">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80" alt="Startup">
+        <span class="card-badge badge-premium">Premium</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Tech & SaaS</div>
+        <h3 class="card-title">Startup / App Mobile</h3>
+        <p class="card-desc">Landing para app com download nas lojas, features, screenshots e avaliações da loja.</p>
+        <div class="card-tags"><span class="tag">App Store</span><span class="tag">Google Play</span><span class="tag">Mockups</span></div>
+        <div class="card-footer"><div class="price">R$ 750 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="ecommerce">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1503602642458-232111445657?w=600&q=80" alt="Moda">
+        <span class="card-badge badge-popular">Popular</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">E-commerce</div>
+        <h3 class="card-title">Moda & Lifestyle</h3>
+        <p class="card-desc">Visual editorial premium para marcas de roupa, acessórios e produtos de lifestyle.</p>
+        <div class="card-tags"><span class="tag">Editorial</span><span class="tag">Grid Visual</span><span class="tag">Instagram</span></div>
+        <div class="card-footer"><div class="price">R$ 520 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="educacao">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=600&q=80" alt="Ebook">
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Educação</div>
+        <h3 class="card-title">E-book & Isca Digital</h3>
+        <p class="card-desc">Página de captura para distribuição de materiais gratuitos e geração de leads qualificados.</p>
+        <div class="card-tags"><span class="tag">Lead Gen</span><span class="tag">E-mail</span><span class="tag">Simples</span></div>
+        <div class="card-footer"><div class="price">R$ 290 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+    <div class="card reveal" data-cat="evento">
+      <div class="card-preview">
+        <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80" alt="Webinar">
+        <span class="card-badge badge-new">Novo</span>
+        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">Eventos</div>
+        <h3 class="card-title">Webinar & Lives</h3>
+        <p class="card-desc">Converta tráfego em inscrições para webinars e transmissões ao vivo com urgência real.</p>
+        <div class="card-tags"><span class="tag">Live</span><span class="tag">Inscrição</span><span class="tag">Urgência</span></div>
+        <div class="card-footer"><div class="price">R$ 340 <span>/ único</span></div><a href="#contato" class="card-action">Contratar →</a></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="features-section" id="vantagens">
+  <div style="text-align:center;">
+    <span class="section-label">Vantagens</span>
+    <h2 class="section-title">Por que escolher a FireCoding?</h2>
+    <p class="section-sub" style="margin:0.8rem auto 0;">Entregamos muito mais do que código — entregamos resultados mensuráveis.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal"><div class="feature-icon">⚡</div><h3>Entrega Rápida</h3><p>Projetos entregues em até 72h após aprovação do briefing e pagamento. Velocidade sem abrir mão da qualidade.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📱</div><h3>100% Responsivo</h3><p>Todos os modelos são desenvolvidos com mobile-first design, funcionando perfeitamente em qualquer dispositivo.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🎯</div><h3>Foco em Conversão</h3><p>Cada elemento é pensado para converter visitantes em clientes com copywriting e UX validados no mercado.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🔍</div><h3>SEO Otimizado</h3><p>Código semântico, meta tags, Open Graph e carregamento ultra-rápido para ranquear melhor no Google.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🛠️</div><h3>Suporte Pós-entrega</h3><p>30 dias de suporte incluso para ajustes, correções e dúvidas após a entrega do seu projeto.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🔒</div><h3>Código Limpo</h3><p>HTML/CSS/JS sem dependências desnecessárias. Código que você pode manter, evoluir e entender facilmente.</p></div>
+  </div>
+</section>
+
+<section class="testimonials-section" id="depoimentos">
+  <div style="text-align:center;">
+    <span class="section-label">Depoimentos</span>
+    <h2 class="section-title">O que nossos clientes dizem</h2>
+    <p class="section-sub" style="margin:0.8rem auto 0;">Resultados reais de quem confiou na FireCoding para crescer.</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p>"A landing page entregue superou minhas expectativas. Em menos de uma semana após o lançamento já tinha triplicado minhas consultas agendadas."</p>
+      <div class="testimonial-author"><div class="author-avatar">DR</div><div class="author-info"><strong>Dra. Renata Souza</strong><span>Psicóloga Clínica — Salvador, BA</span></div></div>
+    </div>
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p>"Profissionalismo do começo ao fim. O briefing foi claro, o prazo foi cumprido e o resultado ficou incrível. Minha taxa de conversão dobrou."</p>
+      <div class="testimonial-author"><div class="author-avatar">MF</div><div class="author-info"><strong>Marcos Freitas</strong><span>CEO — Freitas Digital Agency</span></div></div>
+    </div>
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p>"Já contratei 3 landing pages diferentes para meus cursos. Cada uma com sua identidade e todas convertendo muito bem. Recomendo demais!"</p>
+      <div class="testimonial-author"><div class="author-avatar">CA</div><div class="author-info"><strong>Carla Andrade</strong><span>Mentora de Carreira — Online</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contato">
+  <div class="cta-box">
+    <span class="section-label">Vamos começar</span>
+    <h2>Pronto para ter uma<br><span>landing page que vende?</span></h2>
+    <p>Informe seu e-mail e entraremos em contato para entender seu projeto e indicar o melhor modelo.</p>
+    <div class="cta-form">
+      <input type="email" class="cta-input" placeholder="seu@email.com" id="ctaEmail">
+      <a href="#" class="btn-primary" onclick="handleCTA(event)">Quero minha Landing Page 🔥</a>
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-dim); margin-top:1rem;">Ou fale diretamente via <a href="https://wa.me/5574988482293" target="_blank" style="color:var(--fire-orange); text-decoration:none;">WhatsApp</a></p>
+  </div>
+</section>
+
+<footer>
+<a href="#" class="footer-brand">
+  <img src="C:\Users\Usuário\Desktop\catalogo\logomarca-firecoding.png" alt="FireCoding Logo" class="footer-logo-img">
+</a>  <p>© 2026 FireCodingDeveloper. Todos os direitos reservados.</p>
+  <div class="footer-links">
+    <a href="https://firecodingsite.vercel.app/" target="_blank">Site Principal</a>
+    <a href="https://wa.me/5574988482293" target="_blank">WhatsApp</a>
+    <a href="#catalogo">Catálogo</a>
+  </div>
+</footer>
+
+<a href="https://wa.me/5574988482293" target="_blank" class="whatsapp-float" title="Fale no WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  });
+  (function animRing() {
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  })();
+
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').style.borderBottomColor = scrollY > 40 ? 'rgba(255,94,26,0.2)' : 'var(--dark-border)';
+  });
+
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+
+  function filterCards(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('.card');
+    let count = 0;
+    cards.forEach(c => {
+      const match = cat === 'todos' || c.dataset.cat === cat;
+      c.style.display = match ? '' : 'none';
+      if (match) count++;
+    });
+    document.getElementById('cardCount').textContent = count;
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i % 4 * 0.08) + 's';
+    observer.observe(el);
+  });
+
+  function handleCTA(e) {
+    e.preventDefault();
+    const email = document.getElementById('ctaEmail').value;
+    if (!email || !email.includes('@')) { alert('Por favor, informe um e-mail válido.'); return; }
+    const msg = encodeURIComponent('Olá! Tenho interesse em contratar uma landing page. Meu e-mail: ' + email);
+    window.open('https://wa.me/5574988482293?text=' + msg, '_blank');
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+</script>
+</body>
+</html>
