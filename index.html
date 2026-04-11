@@ -1358,43 +1358,44 @@
     const fn = APP_SCREENS[cat] || APP_SCREENS.todos;
     fn(accentColor);
     // overlay: bottom sheet with card info on top of the app screen
-    const sheetY = 560;
+    const sheetY = 520;
     // dim backdrop for sheet
-    const dimGrad = ctx.createLinearGradient(0, sheetY-80, 0, sheetY);
-    dimGrad.addColorStop(0,'transparent'); dimGrad.addColorStop(1,'rgba(0,0,0,0.7)');
-    ctx.fillStyle=dimGrad; ctx.fillRect(0,sheetY-80,400,80);
-    // sheet
+    const dimGrad = ctx.createLinearGradient(0, sheetY-100, 0, sheetY);
+    dimGrad.addColorStop(0,'transparent'); dimGrad.addColorStop(1,'rgba(0,0,0,0.85)');
+    ctx.fillStyle=dimGrad; ctx.fillRect(0,sheetY-100,400,100);
+    // sheet background
     ctx.fillStyle='#1a1a26';
-    ctx.beginPath(); ctx.roundRect(0,sheetY,400,240,0); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(0,sheetY,400,240,[20,20,0,0]); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(0,sheetY,400,300,[20,20,0,0]); ctx.fill();
     // drag handle
     ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.roundRect(170,sheetY+10,60,4,2); ctx.fill();
     // title
-    ctx.fillStyle='#fff'; ctx.font='bold 16px sans-serif'; ctx.textAlign='left';
-    ctx.fillText(title, 20, sheetY+44);
-    if(badge){ pill(badge.toUpperCase(), 20, sheetY+56, accentColor); }
+    ctx.fillStyle='#fff'; ctx.font='bold 15px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(title, 20, sheetY+42);
+    if(badge){ pill(badge.toUpperCase(), 20, sheetY+52, accentColor); }
     // price
-    ctx.fillStyle=accentColor; ctx.font='bold 24px sans-serif'; ctx.textAlign='right';
-    ctx.fillText(price, 380, sheetY+50);
+    ctx.fillStyle=accentColor; ctx.font='bold 22px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(price, 380, sheetY+46);
     ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='9px sans-serif';
-    ctx.fillText('pagamento único',380,sheetY+66);
+    ctx.fillText('pagamento único',380,sheetY+62);
     // divider
     ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(20,sheetY+86); ctx.lineTo(380,sheetY+86); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(20,sheetY+82); ctx.lineTo(380,sheetY+82); ctx.stroke();
     // features
     const feats=['✔ Responsivo & Mobile First','✔ SEO + Analytics incluídos','✔ Suporte 30 dias pós-entrega'];
     feats.forEach((f,i)=>{
-      ctx.fillStyle='rgba(255,255,255,0.6)'; ctx.font='11px sans-serif'; ctx.textAlign='left';
-      ctx.fillText(f, 20, sheetY+106+i*20);
+      ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='11px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(f, 20, sheetY+102+i*22);
     });
     // CTA
     ctx.fillStyle=accentColor;
-    ctx.beginPath(); ctx.roundRect(20,sheetY+168,360,48,12); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('Contratar este modelo →', 200, sheetY+198);
-    // WhatsApp
-    ctx.strokeStyle=accentColor; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.roundRect(20,sheetY+224,360,0,8); // will paint below sheet if needed
+    ctx.beginPath(); ctx.roundRect(20,sheetY+172,360,46,12); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Contratar este modelo →', 200, sheetY+200);
+    // WhatsApp button
+    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(20,sheetY+226,360,36,10); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('💬  Falar pelo WhatsApp', 200, sheetY+248);
   }
 
   // Color map by category
@@ -1489,36 +1490,24 @@
   if (zoomOut) zoomOut.addEventListener('click', () => { targetZ = Math.min(ZOOM_MAX, targetZ + ZOOM_STEP); });
 
   // --- LOAD CARD IMAGE on "Ver Preview" click ---
-  // Exposed globally so inline onclick can call it
+  // NOTE: We do NOT draw external images directly on the canvas to avoid CORS taint
+  // (tainted canvas = Three.js cannot read the texture = black screen)
+  // Instead we draw everything with Canvas 2D API only.
   window.loadPhonePreview = function(event, btn) {
     event.preventDefault();
     const title  = btn.getAttribute('data-title')  || 'Modelo';
     const cat    = btn.getAttribute('data-cat')    || 'todos';
     const price  = btn.getAttribute('data-price')  || '';
     const badge  = btn.getAttribute('data-badge')  || '';
-    const imgSrc = btn.getAttribute('data-img')    || '';
     const color  = CAT_COLORS[cat] || '#FF5E1A';
 
     // Update active label
     const lbl = document.getElementById('phoneActiveLabel');
     if (lbl) { lbl.textContent = '📱 ' + title; lbl.classList.remove('hidden'); }
 
-    if (imgSrc) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        drawCardScreen(title, price, badge, color, img, cat);
-        screenTex.needsUpdate = true;
-      };
-      img.onerror = () => {
-        drawCardScreen(title, price, badge, color, null, cat);
-        screenTex.needsUpdate = true;
-      };
-      img.src = imgSrc;
-    } else {
-      drawCardScreen(title, price, badge, color, null, cat);
-      screenTex.needsUpdate = true;
-    }
+    // Draw without image (no CORS risk)
+    drawCardScreen(title, price, badge, color, null, cat);
+    screenTex.needsUpdate = true;
 
     // Gentle "snap back to front" on preview load
     targetRX = 0.08; targetRY = -0.12;
@@ -1835,21 +1824,9 @@
     // Reset tilt on each open
     mTargetRX = 0.08; mTargetRY = -0.12;
 
-    // Load and draw
-    if (imgSrc) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      const onLoad = (imgEl) => {
-        drawMobileScreen(title, price, badge, mCurrentColor, imgEl, cat);
-        mobileScreenTex.needsUpdate = true;
-      };
-      img.onload = () => onLoad(img);
-      img.onerror = () => { drawMobileScreen(title, price, badge, mCurrentColor, null, cat); mobileScreenTex.needsUpdate = true; };
-      img.src = imgSrc;
-    } else {
-      drawMobileScreen(title, price, badge, mCurrentColor, null, cat);
-      mobileScreenTex.needsUpdate = true;
-    }
+    // Draw without loading external image (avoids CORS canvas taint = black screen)
+    drawMobileScreen(title, price, badge, mCurrentColor, null, cat);
+    if (mobileScreenTex) mobileScreenTex.needsUpdate = true;
   };
 
   window.closeMobilePhoneModal = function() {
