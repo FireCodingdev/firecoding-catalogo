@@ -520,7 +520,15 @@
 
   function filterCards(cat, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
+    else {
+      // Ativa o botão correto sem referência direta
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + cat + "'")) {
+          b.classList.add('active');
+        }
+      });
+    }
     const cards = document.querySelectorAll('.card');
     let count = 0;
     cards.forEach(c => {
@@ -530,6 +538,37 @@
     });
     document.getElementById('cardCount').textContent = count;
   }
+
+  // Mapeamento de ?cat= da URL para data-cat e textos do hero
+  const CAT_MAP = {
+    'landing':   { filter: 'todos',     heroTitle: 'Escolha sua<br><span class="line-fire">Landing Page</span><br><span class="line-glow">Profissional</span>', heroSub: 'Modelos de alta conversão desenvolvidos pela FireCoding. Escolha, personalize e lance seu projeto em tempo recorde.' },
+    'app':       { filter: 'tech',      heroTitle: 'Apps &amp;<br><span class="line-fire">Soluções</span><br><span class="line-glow">Mobile</span>', heroSub: 'Landing pages para startups e apps mobile. Apresente seu produto com mockups, download links e avaliações.' },
+    'api':       { filter: 'tech',      heroTitle: 'APIs &amp;<br><span class="line-fire">Integrações</span><br><span class="line-glow">Tech & SaaS</span>', heroSub: 'Páginas para produtos tech, SaaS e serviços de API. Documentação clara, pricing e prova social.' },
+    'dashboard': { filter: 'negocio',   heroTitle: 'Dashboards &amp;<br><span class="line-fire">Painéis</span><br><span class="line-glow">Admin</span>', heroSub: 'Landing pages para sistemas, painéis e ferramentas de gestão. Ideal para negócios B2B e SaaS corporativo.' },
+    'ecommerce': { filter: 'ecommerce', heroTitle: 'Lojas &amp;<br><span class="line-fire">E-commerce</span><br><span class="line-glow">que Convertem</span>', heroSub: 'Páginas de produto e lojas com gatilhos mentais, urgência, prova social e checkout otimizado.' },
+    'tech':      { filter: 'tech',      heroTitle: 'Automação &amp;<br><span class="line-fire">Tecnologia</span><br><span class="line-glow">Sob Medida</span>', heroSub: 'Soluções para automação de processos, bots, integrações e ferramentas tech personalizadas.' },
+  };
+
+  function applyUrlFilter() {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat');
+    if (!cat || !CAT_MAP[cat]) return;
+    const cfg = CAT_MAP[cat];
+    // Atualiza o hero
+    const h1 = document.querySelector('.hero h1');
+    const sub = document.querySelector('.hero .hero-sub');
+    if (h1) h1.innerHTML = cfg.heroTitle;
+    if (sub) sub.textContent = cfg.heroSub.replace(/&amp;/g, '&');
+    // Aplica o filtro
+    filterCards(cfg.filter, null);
+    // Scroll suave até o catálogo
+    setTimeout(() => {
+      const el = document.getElementById('catalogo');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+
+  document.addEventListener('DOMContentLoaded', applyUrlFilter);
 
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
