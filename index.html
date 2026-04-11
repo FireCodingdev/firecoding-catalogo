@@ -1043,11 +1043,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // =====================================================================
-// SUPABASE CONFIG — substitua pelas suas credenciais do projeto
+// SUPABASE CONFIG
 // =====================================================================
-const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+const SUPABASE_URL = 'https://yjunwuggojlzymyfbqwc.supabase.co';
+// ⚠️  Cole aqui sua anon key: Supabase → Project Settings → API → anon public
 const SUPABASE_ANON_KEY = 'SUA-ANON-KEY-AQUI';
+
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// E-mails com acesso admin (fallback caso tabela profiles não exista)
+const ADMIN_EMAILS = ['firecodingdev@gmail.com', 'admin@firecoding.com.br'];
 
 // =====================================================================
 // AUTH HELPERS
@@ -1100,10 +1105,15 @@ async function doLogin() {
     showAuthError('loginError', msg); return;
   }
 
-  // Busca perfil do usuário na tabela profiles
-  const { data: profile } = await _supabase.from('profiles').select('*').eq('id', data.user.id).single();
-  const isAdmin = profile?.role === 'admin';
-  const session = { id: data.user.id, email, name: profile?.name || email.split('@')[0], isAdmin };
+  // Busca perfil do usuário na tabela profiles (com fallback por e-mail admin)
+  let profile = null;
+  try {
+    const { data: p } = await _supabase.from('profiles').select('*').eq('id', data.user.id).single();
+    profile = p;
+  } catch(e) { /* tabela pode não existir ainda */ }
+
+  const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.includes(email);
+  const session = { id: data.user.id, email, name: profile?.name || data.user.user_metadata?.name || email.split('@')[0], isAdmin };
 
   closeAuthModal();
   updateNavAfterLogin(session);
@@ -1200,9 +1210,13 @@ document.addEventListener('DOMContentLoaded', () => {
   (async () => {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
-      const { data: profile } = await _supabase.from('profiles').select('*').eq('id', session.user.id).single();
-      const isAdmin = profile?.role === 'admin';
-      const user = { id: session.user.id, email: session.user.email, name: profile?.name || session.user.email.split('@')[0], isAdmin };
+      let profile = null;
+      try {
+        const { data: p } = await _supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        profile = p;
+      } catch(e) {}
+      const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.includes(session.user.email);
+      const user = { id: session.user.id, email: session.user.email, name: profile?.name || session.user.user_metadata?.name || session.user.email.split('@')[0], isAdmin };
       updateNavAfterLogin(user);
     }
   })();
