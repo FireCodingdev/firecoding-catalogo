@@ -1163,6 +1163,30 @@ function updateNavAfterLogin(user) {
   badge.style.display = 'flex';
   document.getElementById('dropdownUserName').textContent = user.name.split(' ')[0] + (user.isAdmin ? ' 🔧' : '');
   document.getElementById('dropdownUserEmail').textContent = user.email;
+
+  // Botão "Acessar Painel de Controle" apenas para admins
+  const existingAdminBtn = document.getElementById('dropdownAdminBtn');
+  if (existingAdminBtn) existingAdminBtn.remove();
+  if (user.isAdmin) {
+    const body = document.querySelector('.user-dropdown-body');
+    const divider = body.querySelector('.user-dropdown-divider');
+    const adminBtn = document.createElement('button');
+    adminBtn.id = 'dropdownAdminBtn';
+    adminBtn.className = 'user-dropdown-item';
+    adminBtn.style.cssText = 'color: var(--fire-orange); font-weight: 600;';
+    adminBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fire-orange)">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Acessar Painel de Controle`;
+    adminBtn.onclick = () => { document.getElementById('userDropdown').classList.remove('open'); window.open('crm.html', '_blank'); };
+    body.insertBefore(adminBtn, divider);
+    // Adiciona um divisor antes do botão admin para separar visualmente
+    const adminDivider = document.createElement('div');
+    adminDivider.className = 'user-dropdown-divider';
+    body.insertBefore(adminDivider, adminBtn);
+  }
 }
 
 // =====================================================================
@@ -1243,15 +1267,19 @@ async function loadCatalogCards(filterCat = 'todos') {
     const tagsHTML = Array.isArray(card.tags)
       ? card.tags.map(t => `<span class="tag">${t}</span>`).join('')
       : '';
-    const priceFormatted = card.price
-      ? `R$ ${Number(card.price).toLocaleString('pt-BR')} <span>/ único</span>`
+    const rawPrice = card.price ? String(card.price).replace(/\./g, '').replace(',', '.') : '';
+    const priceNum = rawPrice ? Math.round(parseFloat(rawPrice)) : 0;
+    const priceFormatted = priceNum
+      ? `R$ ${priceNum.toLocaleString('pt-BR')} <span>/ único</span>`
       : '';
     const imgSrc = card.image_url || '';
 
     return `
       <div class="card reveal" data-cat="${card.category}">
         <div class="card-preview">
-          <img src="${imgSrc}" alt="${card.title}" loading="lazy">
+          <img src="${imgSrc}" alt="${card.title}" loading="lazy"
+            onload="this.classList.add('loaded')"
+            onerror="this.classList.add('loaded');this.style.objectFit='contain';this.style.opacity='0.15'">
           ${badgeHTML}
           <div class="card-overlay">
             <a href="#" class="card-preview-btn"
@@ -1281,6 +1309,10 @@ async function loadCatalogCards(filterCat = 'todos') {
   // Ativa animação reveal nos cards recém criados
   setTimeout(() => {
     grid.querySelectorAll('.card.reveal').forEach(c => c.classList.add('visible'));
+    // Garante imagens já em cache como visíveis
+    grid.querySelectorAll('.card-preview img').forEach(img => {
+      if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+    });
   }, 60);
 }
 
