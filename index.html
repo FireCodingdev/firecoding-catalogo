@@ -82,6 +82,28 @@
     .section-title { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem,4vw,3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
     .section-sub { color: var(--text-muted); font-size: 1rem; line-height: 1.7; font-weight: 300; max-width: 520px; margin-top: 0.8rem; }
     .catalog-section { padding: clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem); }
+
+    /* ---- PHONE MOCKUP PANEL ---- */
+    .catalog-layout { display: flex; gap: 3rem; align-items: flex-start; }
+    .catalog-main { flex: 1; min-width: 0; }
+    .phone-panel {
+      width: 340px; flex-shrink: 0; position: sticky; top: 90px;
+      display: none; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .phone-panel.visible { display: flex; }
+    .phone-panel-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--fire-orange);
+    }
+    .phone-panel-hint {
+      font-size: 0.72rem; color: var(--text-muted); text-align: center; line-height: 1.5;
+    }
+    #phoneCanvas {
+      width: 340px !important; height: 520px !important;
+      border-radius: 16px; cursor: grab;
+    }
+    #phoneCanvas:active { cursor: grabbing; }
+    @media (max-width: 1100px) { .phone-panel { display: none !important; } .catalog-layout { display: block; } }
     .catalog-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem; }
     .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
     .filter-btn { padding: 0.45rem 1.1rem; border-radius: 100px; border: 1px solid var(--dark-border); background: transparent; color: var(--text-muted); font-size: 0.82rem; font-weight: 500; cursor: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
@@ -228,6 +250,8 @@
 </section>
 
 <section class="catalog-section" id="catalogo">
+  <div class="catalog-layout">
+  <div class="catalog-main">
   <div class="catalog-header">
     <div>
       <span class="section-label">Catálogo</span>
@@ -425,6 +449,16 @@
     </div>
 
   </div>
+  </div><!-- /catalog-main -->
+
+  <!-- ===== PHONE 3D MOCKUP ===== -->
+  <aside class="phone-panel" id="phonePanel">
+    <span class="phone-panel-label">Visualização do App</span>
+    <canvas id="phoneCanvas"></canvas>
+    <p class="phone-panel-hint">Arraste para girar · Scroll para zoom</p>
+  </aside>
+
+  </div><!-- /catalog-layout -->
 </section>
 
 <section class="features-section" id="vantagens">
@@ -522,7 +556,6 @@
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     else {
-      // Ativa o botão correto sem referência direta
       document.querySelectorAll('.filter-btn').forEach(b => {
         if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + cat + "'")) {
           b.classList.add('active');
@@ -537,6 +570,8 @@
       if (match) count++;
     });
     document.getElementById('cardCount').textContent = count;
+    // Atualiza a tela do celular 3D
+    if (window.updatePhoneScreen) window.updatePhoneScreen(cat);
   }
 
   // Mapeamento de ?cat= da URL para data-cat e textos do hero
@@ -593,6 +628,302 @@
       if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
   });
+</script>
+
+<!-- ===== THREE.JS PHONE MOCKUP ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas  = document.getElementById('phoneCanvas');
+  const panel   = document.getElementById('phonePanel');
+  if (!canvas) return;
+
+  const W = 340, H = 520;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.shadowMap.enabled = true;
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
+  camera.position.set(0, 0, 5.5);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const key = new THREE.DirectionalLight(0xffffff, 1.2);
+  key.position.set(3, 5, 4);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xFF5E1A, 0.4);
+  fill.position.set(-3, -2, 2);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0x4488ff, 0.3);
+  rim.position.set(0, -4, -3);
+  scene.add(rim);
+
+  // Phone group
+  const phone = new THREE.Group();
+  scene.add(phone);
+
+  // Body
+  const bodyGeo = new THREE.BoxGeometry(1.8, 3.6, 0.18);
+  // Round the body edges with bevel — simulate with slightly smaller inner
+  const bodyMat = new THREE.MeshStandardMaterial({
+    color: 0x111118, metalness: 0.85, roughness: 0.15
+  });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  phone.add(body);
+
+  // Screen bezel (slightly inset)
+  const bezelGeo = new THREE.BoxGeometry(1.62, 3.35, 0.01);
+  const bezelMat = new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.4 });
+  const bezel = new THREE.Mesh(bezelGeo, bezelMat);
+  bezel.position.z = 0.096;
+  phone.add(bezel);
+
+  // Screen (canvas texture)
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 400; screenCanvas.height = 800;
+  const ctx = screenCanvas.getContext('2d');
+
+  function drawScreen(label, sub, color) {
+    ctx.clearRect(0, 0, 400, 800);
+    // Background gradient
+    const bg = ctx.createLinearGradient(0, 0, 0, 800);
+    bg.addColorStop(0, '#0d0d18');
+    bg.addColorStop(1, '#070710');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 400, 800);
+
+    // Status bar
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(0, 0, 400, 40);
+    ctx.fillStyle = '#fff';
+    ctx.font = '500 13px DM Sans, sans-serif';
+    ctx.fillText('9:41', 20, 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('▌▌▌  ☁  🔋', 290, 26);
+
+    // App hero area
+    const heroGrad = ctx.createLinearGradient(0, 40, 0, 340);
+    heroGrad.addColorStop(0, color + 'cc');
+    heroGrad.addColorStop(1, color + '11');
+    ctx.fillStyle = heroGrad;
+    ctx.fillRect(0, 40, 400, 300);
+
+    // App icon placeholder
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath();
+    ctx.roundRect(160, 90, 80, 80, 16);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥', 200, 150);
+
+    // Title
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 22px Syne, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, 200, 210);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillText(sub, 200, 235);
+
+    // CTA button
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(100, 270, 200, 44, 22);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 15px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Ver Modelos →', 200, 298);
+
+    // Cards grid below
+    const cards = [
+      { title: 'SaaS Launch', price: 'R$ 690', badge: 'Premium' },
+      { title: 'Startup App', price: 'R$ 750', badge: 'Premium' },
+      { title: 'Agência Digital', price: 'R$ 490', badge: 'Popular' },
+      { title: 'E-commerce', price: 'R$ 490', badge: 'Popular' },
+    ];
+    cards.forEach((c, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = 20 + col * 190;
+      const y = 360 + row * 170;
+      ctx.fillStyle = '#16161d';
+      ctx.beginPath();
+      ctx.roundRect(x, y, 172, 155, 12);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,94,26,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Image placeholder
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.beginPath();
+      ctx.roundRect(x + 8, y + 8, 156, 80, 8);
+      ctx.fill();
+      // Badge
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x + 8, y + 16, 55, 20, 10);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(c.badge.toUpperCase(), x + 14, y + 30);
+      // Title
+      ctx.fillStyle = '#f4f4f6';
+      ctx.font = 'bold 12px DM Sans, sans-serif';
+      ctx.fillText(c.title, x + 10, y + 105);
+      // Price
+      ctx.fillStyle = color;
+      ctx.font = 'bold 13px DM Sans, sans-serif';
+      ctx.fillText(c.price, x + 10, y + 124);
+      // Button
+      ctx.fillStyle = 'rgba(255,94,26,0.15)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x + 8, y + 132, 156, 15, 7);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.font = '10px DM Sans';
+      ctx.textAlign = 'center';
+      ctx.fillText('Contratar →', x + 86, y + 143);
+    });
+  }
+
+  // Default screen
+  drawScreen('App Mobile', 'Modelos prontos', '#FF5E1A');
+
+  const screenTex = new THREE.CanvasTexture(screenCanvas);
+  const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
+  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
+  const screen = new THREE.Mesh(screenGeo, screenMat);
+  screen.position.z = 0.098;
+  phone.add(screen);
+
+  // Notch
+  const notchGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.42, 24);
+  const notchMat = new THREE.MeshStandardMaterial({ color: 0x0a0a10 });
+  const notch = new THREE.Mesh(notchGeo, notchMat);
+  notch.rotation.z = Math.PI / 2;
+  notch.position.set(0, 1.62, 0.1);
+  phone.add(notch);
+
+  // Side buttons
+  const btnGeo = new THREE.BoxGeometry(0.06, 0.36, 0.14);
+  const btnMat = new THREE.MeshStandardMaterial({ color: 0x1a1a25, metalness: 0.9, roughness: 0.1 });
+  [-0.7, -1.1].forEach(y => {
+    const btn = new THREE.Mesh(btnGeo, btnMat);
+    btn.position.set(-0.93, y, 0);
+    phone.add(btn);
+  });
+  const pBtn = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.14), btnMat);
+  pBtn.position.set(0.93, -0.5, 0);
+  phone.add(pBtn);
+
+  // Camera lens
+  const lensRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.16, 0.04, 16, 32),
+    new THREE.MeshStandardMaterial({ color: 0x222230, metalness: 1, roughness: 0.1 })
+  );
+  lensRing.position.set(-0.4, 1.35, -0.1);
+  phone.add(lensRing);
+  const lens = new THREE.Mesh(
+    new THREE.CircleGeometry(0.13, 32),
+    new THREE.MeshStandardMaterial({ color: 0x050508, metalness: 0.5, roughness: 0.1 })
+  );
+  lens.position.set(-0.4, 1.35, -0.08);
+  phone.add(lens);
+
+  // Initial tilt
+  phone.rotation.x = 0.12;
+  phone.rotation.y = -0.25;
+
+  // Drag interaction
+  let isDragging = false, lastX = 0, lastY = 0;
+  let velX = 0, velY = 0;
+  let autoRot = true;
+
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; autoRot = false; velX = 0; velY = 0; });
+  window.addEventListener('mouseup', () => { isDragging = false; });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    velX = dy * 0.008;
+    velY = dx * 0.008;
+    phone.rotation.x += velX;
+    phone.rotation.y += velY;
+    lastX = e.clientX; lastY = e.clientY;
+  });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => { isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; autoRot = false; });
+  canvas.addEventListener('touchend', () => { isDragging = false; });
+  canvas.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - lastX;
+    const dy = e.touches[0].clientY - lastY;
+    velX = dy * 0.008;
+    velY = dx * 0.008;
+    phone.rotation.x += velX;
+    phone.rotation.y += velY;
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+  }, { passive: true });
+
+  // Scroll = zoom
+  canvas.addEventListener('wheel', e => {
+    camera.position.z = Math.max(3, Math.min(9, camera.position.z + e.deltaY * 0.01));
+  }, { passive: true });
+
+  // Update screen when category changes — exposed globally
+  window.updatePhoneScreen = function(cat) {
+    const cfg = {
+      'tech':      { label: 'Tech & SaaS',    sub: 'Apps e Software', color: '#FF5E1A' },
+      'negocio':   { label: 'Negócios',        sub: 'Soluções B2B', color: '#FFA040' },
+      'ecommerce': { label: 'E-commerce',      sub: 'Lojas Virtuais', color: '#e53a1a' },
+      'saude':     { label: 'Saúde & Bem-estar', sub: 'Clínicas e Personal', color: '#40c090' },
+      'evento':    { label: 'Eventos',         sub: 'Congressos e Lives', color: '#9060ff' },
+      'educacao':  { label: 'Educação',        sub: 'Cursos e E-books', color: '#218fcf' },
+      'todos':     { label: 'Todos os Modelos', sub: 'Escolha o seu', color: '#FF5E1A' },
+    };
+    const c = cfg[cat] || cfg['todos'];
+    drawScreen(c.label, c.sub, c.color);
+    screenTex.needsUpdate = true;
+  };
+
+  // Show/hide panel based on cat=app param (also toggleable by filter)
+  function checkVisibility() {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat');
+    // Show for app/tech/todos or if we're showing tech cards
+    panel.classList.toggle('visible', true); // always show
+  }
+  checkVisibility();
+
+  // Animate
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isDragging) {
+      // Inertia
+      velX *= 0.92;
+      velY *= 0.92;
+      phone.rotation.x += velX;
+      phone.rotation.y += velY;
+      // Gentle float when idle
+      if (Math.abs(velX) < 0.0005 && Math.abs(velY) < 0.0005) {
+        phone.rotation.y += 0.004;
+        phone.rotation.x = 0.12 + Math.sin(Date.now() * 0.001) * 0.04;
+      }
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
 </script>
 </body>
 </html>
