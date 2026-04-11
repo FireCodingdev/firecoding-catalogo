@@ -478,83 +478,250 @@
     /* Loading spinner */
     .auth-loading { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    /* ---- CARD DETAIL MODAL ---- */
-    .card-detail-overlay {
+
+    /* ══════════════════════════════════════════════════
+       CARD DETAIL MODAL — Compacto & Moderno
+    ══════════════════════════════════════════════════ */
+    .cd-overlay {
       display: none; position: fixed; inset: 0; z-index: 9200;
-      background: rgba(0,0,0,0.88); backdrop-filter: blur(16px);
-      align-items: center; justify-content: center;
-      padding: 1rem;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(18px);
+      align-items: center; justify-content: center; padding: 1rem;
     }
-    .card-detail-overlay.open { display: flex; }
-    .card-detail-modal {
-      background: var(--dark-card); border: 1px solid var(--dark-border);
-      border-radius: 20px; width: 100%; max-width: 880px;
-      max-height: 92vh; overflow-y: auto; position: relative;
-      animation: slideUp 0.3s ease;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 60px rgba(255,94,26,0.1);
+    .cd-overlay.open { display: flex; }
+
+    .cd-modal {
+      background: var(--dark-card);
+      border: 1px solid var(--dark-border);
+      border-radius: 20px;
+      width: 100%; max-width: 760px;
+      max-height: 88vh;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+      animation: cdIn 0.28s cubic-bezier(0.16,1,0.3,1) both;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,94,26,0.08);
+    }
+    @keyframes cdIn {
+      from { opacity:0; transform: scale(0.96) translateY(16px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+
+    /* Close */
+    .cd-close {
+      position: absolute; top: 0.85rem; right: 0.85rem; z-index: 10;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7); font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; backdrop-filter: blur(6px);
+    }
+    .cd-close:hover { background: rgba(255,94,26,0.25); border-color: var(--fire-orange); color: #fff; }
+
+    /* Layout: imagem esquerda + info direita em 2 colunas */
+    .cd-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 0; flex: 1; overflow: hidden;
+    }
+    @media (max-width: 620px) {
+      .cd-inner { grid-template-columns: 1fr; }
+      .cd-reviews-wrap { border-left: none; border-top: 1px solid var(--dark-border); }
+    }
+
+    /* Coluna esquerda: galeria */
+    .cd-gallery {
+      display: flex; flex-direction: column;
+      background: var(--dark-surface); overflow: hidden;
+      border-radius: 20px 0 0 20px;
+    }
+    .cd-main-img-wrap {
+      flex: 1; min-height: 0; overflow: hidden; position: relative;
+      background: #0a0a12;
+    }
+    .cd-main-img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; transition: opacity 0.25s;
+    }
+    .cd-badge-abs {
+      position: absolute; top: 10px; left: 10px;
+    }
+    .cd-thumbs {
+      display: flex; gap: 0.4rem; padding: 0.6rem;
+      background: rgba(0,0,0,0.5); overflow-x: auto; flex-shrink: 0;
+    }
+    .cd-thumbs::-webkit-scrollbar { height: 3px; }
+    .cd-thumbs::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
+    .cd-thumb {
+      width: 54px; height: 40px; object-fit: cover; border-radius: 5px;
+      border: 2px solid transparent; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.2s, opacity 0.2s; opacity: 0.55;
+    }
+    .cd-thumb.active, .cd-thumb:hover { border-color: var(--fire-orange); opacity: 1; }
+
+    /* Coluna direita: info + reviews */
+    .cd-right {
+      display: flex; flex-direction: column;
+      max-height: 88vh; overflow: hidden;
+    }
+
+    /* Info section */
+    .cd-info {
+      padding: 1.2rem 1.4rem 1rem;
+      border-bottom: 1px solid var(--dark-border);
+      flex-shrink: 0;
+    }
+    .cd-top-row {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap;
+    }
+    .cd-cat {
+      font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--fire-orange);
+    }
+    .cd-title {
+      font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800;
+      letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.4rem; line-height: 1.2;
+    }
+    .cd-stars-row {
+      display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.55rem;
+    }
+    .cd-stars { color: var(--fire-amber); font-size: 0.82rem; letter-spacing: 1px; }
+    .cd-rating-num { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
+    .cd-rating-count { font-size: 0.72rem; color: var(--text-muted); }
+    .cd-desc {
+      font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;
+      font-weight: 300; margin-bottom: 0.7rem;
+    }
+    .cd-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.9rem; }
+    .cd-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    }
+    .cd-price {
+      font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 800;
+      color: var(--text-primary); white-space: nowrap;
+    }
+    .cd-price span { font-size: 0.72rem; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+    .cd-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--fire-orange); color: #fff;
+      padding: 0.6rem 1.2rem; border-radius: 7px;
+      font-weight: 700; font-size: 0.82rem;
+      border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      white-space: nowrap; text-decoration: none;
+      box-shadow: 0 0 16px var(--glow-orange);
+    }
+    .cd-btn:hover { background: var(--fire-red); transform: translateY(-1px); }
+
+    /* Reviews section */
+    .cd-reviews-wrap {
+      flex: 1; overflow-y: auto; min-height: 0;
+      border-left: 1px solid var(--dark-border);
       display: flex; flex-direction: column;
     }
-    .card-detail-close {
-      position: absolute; top: 1rem; right: 1rem; z-index: 10;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--dark-surface); border: 1px solid var(--dark-border);
-      color: var(--text-muted); font-size: 1.1rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .card-detail-close:hover { border-color: var(--fire-orange); color: var(--fire-orange); }
-    .card-detail-gallery {
-      width: 100%; background: var(--dark-surface);
-      border-radius: 20px 20px 0 0; overflow: hidden; position: relative;
-    }
-    .card-detail-main-img {
-      width: 100%; height: 420px; object-fit: cover;
-      display: block; transition: opacity 0.3s;
-    }
-    .card-detail-thumbs {
-      display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
-      background: rgba(0,0,0,0.4); overflow-x: auto;
-    }
-    .card-detail-thumbs::-webkit-scrollbar { height: 4px; }
-    .card-detail-thumbs::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
-    .card-detail-thumb {
-      width: 72px; height: 52px; object-fit: cover; border-radius: 6px;
-      border: 2px solid transparent; cursor: pointer; flex-shrink: 0;
-      transition: border-color 0.2s, opacity 0.2s; opacity: 0.6;
-    }
-    .card-detail-thumb.active, .card-detail-thumb:hover { border-color: var(--fire-orange); opacity: 1; }
-    .card-detail-body { padding: 1.8rem 2rem 2rem; }
-    .card-detail-badge-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
-    .card-detail-cat { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fire-orange); }
-    .card-detail-title { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.8rem; }
-    .card-detail-desc { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; font-weight: 300; margin-bottom: 1.2rem; }
-    .card-detail-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
-    .card-detail-footer {
+    .cd-reviews-wrap::-webkit-scrollbar { width: 4px; }
+    .cd-reviews-wrap::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
+
+    .cd-reviews-header {
+      padding: 0.85rem 1.2rem 0.6rem;
+      border-bottom: 1px solid var(--dark-border);
       display: flex; align-items: center; justify-content: space-between;
-      padding-top: 1.2rem; border-top: 1px solid var(--dark-border);
-      flex-wrap: wrap; gap: 1rem;
+      flex-shrink: 0; position: sticky; top: 0;
+      background: var(--dark-card); z-index: 2;
     }
-    .card-detail-price { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
-    .card-detail-price span { font-size: 0.85rem; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 300; }
-    .card-detail-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: var(--fire-orange); color: #fff;
-      padding: 0.75rem 1.8rem; border-radius: 8px; font-weight: 700;
-      font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-      box-shadow: 0 0 20px var(--glow-orange);
+    .cd-reviews-title {
+      font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700;
     }
-    .card-detail-btn:hover { background: var(--fire-red); transform: translateY(-1px); box-shadow: 0 0 30px var(--glow-orange); }
-    .card-detail-no-img {
-      width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;
-      color: var(--text-dim); font-size: 0.85rem; flex-direction: column; gap: 0.5rem;
+    .cd-reviews-count {
+      font-size: 0.7rem; color: var(--text-muted);
+      background: var(--dark-surface); border: 1px solid var(--dark-border);
+      padding: 0.15rem 0.55rem; border-radius: 100px;
     }
-    @media (max-width: 600px) {
-      .card-detail-main-img { height: 240px; }
-      .card-detail-body { padding: 1.2rem 1.2rem 1.5rem; }
-      .card-detail-title { font-size: 1.3rem; }
+
+    /* Review form */
+    .cd-review-form {
+      padding: 0.8rem 1.1rem;
+      border-bottom: 1px solid var(--dark-border);
+      background: rgba(255,94,26,0.03);
+      flex-shrink: 0;
     }
+    .cd-form-stars {
+      display: flex; gap: 0.3rem; margin-bottom: 0.55rem;
+    }
+    .cd-star-btn {
+      font-size: 1.2rem; background: none; border: none; cursor: pointer;
+      color: var(--dark-border); transition: color 0.15s, transform 0.12s;
+      padding: 0; line-height: 1;
+    }
+    .cd-star-btn.lit { color: var(--fire-amber); }
+    .cd-star-btn:hover { transform: scale(1.2); }
+    .cd-form-row {
+      display: flex; gap: 0.4rem; align-items: flex-end;
+    }
+    .cd-form-textarea {
+      flex: 1; background: var(--dark-surface); border: 1.5px solid var(--dark-border);
+      border-radius: 8px; padding: 0.55rem 0.7rem; color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem; resize: none;
+      outline: none; transition: border-color 0.2s; min-height: 58px; max-height: 110px;
+    }
+    .cd-form-textarea::placeholder { color: var(--text-dim); }
+    .cd-form-textarea:focus { border-color: var(--fire-orange); }
+    .cd-form-submit {
+      background: var(--fire-orange); color: #fff; border: none;
+      border-radius: 8px; width: 38px; height: 38px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .cd-form-submit:hover { background: var(--fire-red); }
+    .cd-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .cd-form-login-hint {
+      font-size: 0.72rem; color: var(--text-muted); text-align: center;
+      padding: 0.5rem 0;
+    }
+    .cd-form-login-hint a { color: var(--fire-orange); cursor: pointer; font-weight: 600; }
+
+    /* Review list */
+    .cd-reviews-list { padding: 0.5rem 0; flex: 1; }
+    .cd-review-item {
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      animation: fadeUp 0.3s ease both;
+    }
+    .cd-review-item:last-child { border-bottom: none; }
+    .cd-review-top {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;
+    }
+    .cd-review-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--fire-orange), var(--fire-red));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700; color: #fff;
+    }
+    .cd-review-name { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); }
+    .cd-review-stars { color: var(--fire-amber); font-size: 0.65rem; letter-spacing: 1px; }
+    .cd-review-date { font-size: 0.65rem; color: var(--text-dim); margin-left: auto; }
+    .cd-review-text { font-size: 0.78rem; color: var(--text-muted); line-height: 1.55; }
+    .cd-reviews-empty {
+      padding: 2rem 1.1rem; text-align: center;
+      color: var(--text-muted); font-size: 0.78rem;
+    }
+    .cd-reviews-empty svg { opacity: 0.2; margin-bottom: 0.5rem; }
+
+    /* Rating bar summary */
+    .cd-rating-bars {
+      padding: 0.7rem 1.1rem;
+      border-bottom: 1px solid var(--dark-border);
+      display: flex; flex-direction: column; gap: 0.25rem;
+      flex-shrink: 0;
+    }
+    .cd-bar-row {
+      display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem;
+    }
+    .cd-bar-label { color: var(--text-muted); width: 14px; text-align: right; }
+    .cd-bar-track {
+      flex: 1; height: 4px; background: var(--dark-surface);
+      border-radius: 2px; overflow: hidden;
+    }
+    .cd-bar-fill { height: 100%; background: var(--fire-amber); border-radius: 2px; transition: width 0.4s ease; }
+    .cd-bar-pct { color: var(--text-dim); width: 28px; }
   </style>
 </head>
 <body>
@@ -1346,17 +1513,15 @@ async function loadCatalogCards(filterCat = 'todos') {
     const priceFormatted = priceNum
       ? `R$ ${priceNum.toLocaleString('pt-BR')} <span>/ único</span>`
       : '';
-    // Imagem de capa do card (images[] do catálogo)
-    const imgSrc = card.cover_url || (Array.isArray(card.images) && card.images[0]) || '';
-    // Imagem do mockup/celular (mockup_images[])
+    const imgSrc    = card.cover_url || (Array.isArray(card.images) && card.images[0]) || '';
     const mockupSrc = (Array.isArray(card.mockup_images) && card.mockup_images[0]) || imgSrc;
-    // Todas as imagens do card para galeria
     const allImages = Array.isArray(card.images) ? card.images.filter(Boolean) : (imgSrc ? [imgSrc] : []);
     const imagesJson = JSON.stringify(allImages).replace(/"/g, '&quot;');
 
     return `
       <div class="card reveal" data-cat="${card.category}"
         onclick="openCardDetail(event, this)"
+        data-card-id="${card.id}"
         data-card-title="${card.title.replace(/"/g,'&quot;')}"
         data-card-cat="${catLabel}"
         data-card-price="${priceNum}"
@@ -1376,7 +1541,7 @@ async function loadCatalogCards(filterCat = 'todos') {
               data-price="R$ ${card.price || ''}"
               data-badge="${card.badge || ''}"
               data-img="${mockupSrc}"
-              onclick="loadPhonePreview(event, this)">
+              onclick="event.stopPropagation();loadPhonePreview(event, this)">
               ${previewSVG}Ver Preview
             </a>
           </div>
@@ -1445,124 +1610,317 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 });
-</script>
+<!-- ══════════════════════════════════════════════════
+     CARD DETAIL MODAL — Compacto + Reviews
+══════════════════════════════════════════════════ -->
+<div class="cd-overlay" id="cdOverlay" onclick="if(event.target===this)closeCardDetail()">
+  <div class="cd-modal" id="cdModal">
+    <button class="cd-close" onclick="closeCardDetail()">✕</button>
 
-<script>
-// =====================================================================
-// CARD DETAIL MODAL
-// =====================================================================
-window.openCardDetail = function(event, cardEl) {
-  // Não abre se clicou em botão de preview ou contratar
-  if (event.target.closest('.card-preview-btn') || event.target.closest('.card-action')) return;
-
-  const title   = cardEl.getAttribute('data-card-title') || '';
-  const cat     = cardEl.getAttribute('data-card-cat') || '';
-  const priceN  = parseInt(cardEl.getAttribute('data-card-price') || '0', 10);
-  const desc    = cardEl.getAttribute('data-card-desc') || '';
-  const badge   = cardEl.getAttribute('data-card-badge') || '';
-  let images = [];
-  try { images = JSON.parse(cardEl.getAttribute('data-card-images').replace(/&quot;/g, '"') || '[]'); } catch(e) {}
-  let tags = [];
-  try { tags = JSON.parse(cardEl.getAttribute('data-card-tags') || '[]'); } catch(e) {}
-
-  document.getElementById('cardDetailTitle').textContent = title;
-  document.getElementById('cardDetailCat').textContent = cat;
-  document.getElementById('cardDetailDesc').textContent = desc;
-
-  const badgeEl = document.getElementById('cardDetailBadgeEl');
-  if (badge) {
-    const cls = badge === 'popular' ? 'badge-popular' : badge === 'Premium' ? 'badge-premium' : 'badge-new';
-    badgeEl.innerHTML = `<span class="card-badge ${cls}" style="position:static;display:inline-block">${badge}</span>`;
-  } else {
-    badgeEl.innerHTML = '';
-  }
-
-  const priceEl = document.getElementById('cardDetailPrice');
-  priceEl.innerHTML = priceN ? `R$ ${priceN.toLocaleString('pt-BR')} <span>/ único</span>` : '';
-
-  const tagsEl = document.getElementById('cardDetailTags');
-  tagsEl.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
-
-  const gallery = document.getElementById('cardDetailGallery');
-  const mainImg = document.getElementById('cardDetailMainImg');
-  const thumbsEl = document.getElementById('cardDetailThumbs');
-
-  const validImages = images.filter(Boolean);
-  if (validImages.length > 0) {
-    gallery.style.display = '';
-    mainImg.src = validImages[0];
-    mainImg.alt = title;
-    if (validImages.length > 1) {
-      thumbsEl.style.display = '';
-      thumbsEl.innerHTML = validImages.map((url, i) =>
-        `<img class="card-detail-thumb ${i===0?'active':''}" src="${url}" alt="Imagem ${i+1}"
-          onclick="selectDetailImg(this,'${url}')">`
-      ).join('');
-    } else {
-      thumbsEl.style.display = 'none';
-      thumbsEl.innerHTML = '';
-    }
-  } else {
-    gallery.style.display = 'none';
-  }
-
-  // Botão contratar com verificação de login
-  const btn = document.getElementById('cardDetailBtn');
-  btn.onclick = async function(e) {
-    e.preventDefault();
-    closeCardDetail();
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) { openAuthModal(); return; }
-    const priceStr = priceN ? `R$ ${priceN.toLocaleString('pt-BR')}` : '';
-    const msg = encodeURIComponent(`Olá! Quero contratar: *${title}* (${priceStr}). E-mail: ${session.user.email}`);
-    window.open('https://wa.me/5574988482293?text=' + msg, '_blank');
-  };
-
-  document.getElementById('cardDetailOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-
-window.selectDetailImg = function(thumbEl, url) {
-  document.getElementById('cardDetailMainImg').src = url;
-  document.querySelectorAll('.card-detail-thumb').forEach(t => t.classList.remove('active'));
-  thumbEl.classList.add('active');
-};
-
-window.closeCardDetail = function() {
-  document.getElementById('cardDetailOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-};
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    if (typeof closeCardDetail === 'function') closeCardDetail();
-    if (typeof closeMobilePhoneModal === 'function') closeMobilePhoneModal();
-  }
-});
-</script>
-<div class="card-detail-overlay" id="cardDetailOverlay" onclick="if(event.target===this)closeCardDetail()">
-  <div class="card-detail-modal" id="cardDetailModal">
-    <button class="card-detail-close" onclick="closeCardDetail()">✕</button>
-    <div class="card-detail-gallery" id="cardDetailGallery">
-      <img class="card-detail-main-img" id="cardDetailMainImg" src="" alt="">
-      <div class="card-detail-thumbs" id="cardDetailThumbs"></div>
-    </div>
-    <div class="card-detail-body">
-      <div class="card-detail-badge-row">
-        <span class="card-detail-cat" id="cardDetailCat"></span>
-        <span id="cardDetailBadgeEl"></span>
+    <div class="cd-inner">
+      <!-- Esquerda: galeria -->
+      <div class="cd-gallery">
+        <div class="cd-main-img-wrap">
+          <img class="cd-main-img" id="cdMainImg" src="" alt="">
+          <div class="cd-badge-abs" id="cdBadgeAbs"></div>
+        </div>
+        <div class="cd-thumbs" id="cdThumbs"></div>
       </div>
-      <h2 class="card-detail-title" id="cardDetailTitle"></h2>
-      <p class="card-detail-desc" id="cardDetailDesc"></p>
-      <div class="card-detail-tags" id="cardDetailTags"></div>
-      <div class="card-detail-footer">
-        <div class="card-detail-price" id="cardDetailPrice"></div>
-        <a href="#contato" class="card-detail-btn" id="cardDetailBtn" onclick="closeCardDetail()">Contratar →</a>
-      </div>
-    </div>
+
+      <!-- Direita: info + reviews -->
+      <div class="cd-right">
+        <!-- Info -->
+        <div class="cd-info">
+          <div class="cd-top-row">
+            <span class="cd-cat" id="cdCat"></span>
+          </div>
+          <div class="cd-title" id="cdTitle"></div>
+          <div class="cd-stars-row">
+            <span class="cd-stars" id="cdStarsDisplay">☆☆☆☆☆</span>
+            <span class="cd-rating-num" id="cdRatingNum">—</span>
+            <span class="cd-rating-count" id="cdRatingCount"></span>
+          </div>
+          <div class="cd-desc" id="cdDesc"></div>
+          <div class="cd-tags" id="cdTags"></div>
+          <div class="cd-footer">
+            <div class="cd-price" id="cdPrice"></div>
+            <button class="cd-btn" id="cdContratarBtn">Contratar →</button>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="cd-reviews-wrap">
+          <div class="cd-reviews-header">
+            <span class="cd-reviews-title">Avaliações</span>
+            <span class="cd-reviews-count" id="cdReviewsCount">0</span>
+          </div>
+
+          <!-- Barras de distribuição -->
+          <div class="cd-rating-bars" id="cdRatingBars">
+            <div class="cd-bar-row"><span class="cd-bar-label">5</span><div class="cd-bar-track"><div class="cd-bar-fill" id="cdBar5" style="width:0%"></div></div><span class="cd-bar-pct" id="cdPct5">0%</span></div>
+            <div class="cd-bar-row"><span class="cd-bar-label">4</span><div class="cd-bar-track"><div class="cd-bar-fill" id="cdBar4" style="width:0%"></div></div><span class="cd-bar-pct" id="cdPct4">0%</span></div>
+            <div class="cd-bar-row"><span class="cd-bar-label">3</span><div class="cd-bar-track"><div class="cd-bar-fill" id="cdBar3" style="width:0%"></div></div><span class="cd-bar-pct" id="cdPct3">0%</span></div>
+            <div class="cd-bar-row"><span class="cd-bar-label">2</span><div class="cd-bar-track"><div class="cd-bar-fill" id="cdBar2" style="width:0%"></div></div><span class="cd-bar-pct" id="cdPct2">0%</span></div>
+            <div class="cd-bar-row"><span class="cd-bar-label">1</span><div class="cd-bar-track"><div class="cd-bar-fill" id="cdBar1" style="width:0%"></div></div><span class="cd-bar-pct" id="cdPct1">0%</span></div>
+          </div>
+
+          <!-- Formulário de avaliação -->
+          <div class="cd-review-form" id="cdReviewForm">
+            <div class="cd-form-stars" id="cdFormStars">
+              <button class="cd-star-btn" data-v="1" onclick="setReviewStar(1)">★</button>
+              <button class="cd-star-btn" data-v="2" onclick="setReviewStar(2)">★</button>
+              <button class="cd-star-btn" data-v="3" onclick="setReviewStar(3)">★</button>
+              <button class="cd-star-btn" data-v="4" onclick="setReviewStar(4)">★</button>
+              <button class="cd-star-btn" data-v="5" onclick="setReviewStar(5)">★</button>
+            </div>
+            <div class="cd-form-row">
+              <textarea class="cd-form-textarea" id="cdReviewText" placeholder="Compartilhe sua experiência com este modelo..." rows="2"></textarea>
+              <button class="cd-form-submit" id="cdSubmitBtn" onclick="submitReview()" title="Enviar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="cd-form-login-hint" id="cdLoginHint" style="display:none">
+            <a onclick="closeCardDetail();openAuthModal()">Faça login</a> para deixar uma avaliação
+          </div>
+
+          <!-- Lista de reviews -->
+          <div class="cd-reviews-list" id="cdReviewsList">
+            <div class="cd-reviews-empty">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <div>Nenhuma avaliação ainda.<br>Seja o primeiro!</div>
+            </div>
+          </div>
+        </div><!-- /cd-reviews-wrap -->
+      </div><!-- /cd-right -->
+    </div><!-- /cd-inner -->
   </div>
 </div>
 
+<script>
+// ══════════════════════════════════════════════════
+// CARD DETAIL MODAL — Reviews & Logic
+// ══════════════════════════════════════════════════
+(function () {
+  let _cdCardId   = null;
+  let _cdPriceN   = 0;
+  let _cdTitle    = '';
+  let _reviewStar = 0;
+  let _cdSession  = null;
+
+  // ── Abre o modal ─────────────────────────────────
+  window.openCardDetail = function(event, cardEl) {
+    if (event.target.closest('.card-preview-btn') || event.target.closest('.card-action')) return;
+
+    _cdCardId = cardEl.getAttribute('data-card-id') || '';
+    _cdTitle  = cardEl.getAttribute('data-card-title') || '';
+    const cat     = cardEl.getAttribute('data-card-cat') || '';
+    _cdPriceN     = parseInt(cardEl.getAttribute('data-card-price') || '0', 10);
+    const desc    = cardEl.getAttribute('data-card-desc') || '';
+    const badge   = cardEl.getAttribute('data-card-badge') || '';
+
+    let images = [];
+    try { images = JSON.parse(cardEl.getAttribute('data-card-images').replace(/&quot;/g,'"') || '[]'); } catch(e){}
+    let tags = [];
+    try { tags = JSON.parse(cardEl.getAttribute('data-card-tags') || '[]'); } catch(e){}
+
+    // Preenche info
+    document.getElementById('cdCat').textContent   = cat;
+    document.getElementById('cdTitle').textContent = _cdTitle;
+    document.getElementById('cdDesc').textContent  = desc;
+    document.getElementById('cdTags').innerHTML    = tags.map(t=>`<span class="tag">${t}</span>`).join('');
+    document.getElementById('cdPrice').innerHTML   = _cdPriceN
+      ? `R$ ${_cdPriceN.toLocaleString('pt-BR')} <span>/ único</span>` : '';
+
+    // Badge
+    const badgeAbs = document.getElementById('cdBadgeAbs');
+    if (badge) {
+      const bc = badge==='popular'?'badge-popular':badge==='Premium'?'badge-premium':'badge-new';
+      badgeAbs.innerHTML = `<span class="card-badge ${bc}">${badge}</span>`;
+    } else { badgeAbs.innerHTML = ''; }
+
+    // Galeria
+    const validImgs = images.filter(Boolean);
+    const mainImg   = document.getElementById('cdMainImg');
+    const thumbsEl  = document.getElementById('cdThumbs');
+    if (validImgs.length > 0) {
+      mainImg.src = validImgs[0]; mainImg.alt = _cdTitle;
+      if (validImgs.length > 1) {
+        thumbsEl.style.display = '';
+        thumbsEl.innerHTML = validImgs.map((u,i)=>
+          `<img class="cd-thumb ${i===0?'active':''}" src="${u}" alt="" onclick="cdSelectImg(this,'${u}')">`
+        ).join('');
+      } else { thumbsEl.style.display='none'; }
+    } else { mainImg.src=''; thumbsEl.style.display='none'; }
+
+    // Botão contratar
+    document.getElementById('cdContratarBtn').onclick = async function() {
+      closeCardDetail();
+      const { data:{session} } = await _supabase.auth.getSession();
+      if (!session) { openAuthModal(); return; }
+      const ps = _cdPriceN ? `R$ ${_cdPriceN.toLocaleString('pt-BR')}` : '';
+      const msg = encodeURIComponent(`Olá! Quero contratar: *${_cdTitle}* (${ps}). E-mail: ${session.user.email}`);
+      window.open('https://wa.me/5574988482293?text='+msg,'_blank');
+    };
+
+    // Reset form
+    _reviewStar = 0;
+    renderFormStars();
+    document.getElementById('cdReviewText').value = '';
+
+    // Verifica sessão p/ mostrar form ou hint de login
+    (async () => {
+      const { data:{session} } = await _supabase.auth.getSession();
+      _cdSession = session;
+      document.getElementById('cdReviewForm').style.display  = session ? '' : 'none';
+      document.getElementById('cdLoginHint').style.display   = session ? 'none' : '';
+    })();
+
+    // Carrega reviews
+    loadReviews();
+
+    document.getElementById('cdOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeCardDetail = function() {
+    document.getElementById('cdOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.cdSelectImg = function(el, url) {
+    document.getElementById('cdMainImg').src = url;
+    document.querySelectorAll('.cd-thumb').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  };
+
+  // ── Estrelas do formulário ───────────────────────
+  window.setReviewStar = function(n) {
+    _reviewStar = n;
+    renderFormStars();
+  };
+
+  function renderFormStars() {
+    document.querySelectorAll('.cd-star-btn').forEach(b => {
+      b.classList.toggle('lit', parseInt(b.dataset.v) <= _reviewStar);
+    });
+  }
+
+  // ── Submete avaliação ───────────────────────────
+  window.submitReview = async function() {
+    if (!_cdSession) { openAuthModal(); return; }
+    const text = document.getElementById('cdReviewText').value.trim();
+    if (!_reviewStar) { showToast('Selecione uma nota de 1 a 5 estrelas.', 'info'); return; }
+    if (!text)        { showToast('Escreva um comentário antes de enviar.', 'info'); return; }
+
+    const btn = document.getElementById('cdSubmitBtn');
+    btn.disabled = true;
+
+    const { error } = await _supabase.from('card_reviews').insert({
+      card_id:  _cdCardId,
+      user_id:  _cdSession.user.id,
+      user_name: _cdSession.user.user_metadata?.name || _cdSession.user.email.split('@')[0],
+      rating:   _reviewStar,
+      comment:  text,
+    });
+
+    btn.disabled = false;
+
+    if (error) {
+      // Verifica se é erro de unique constraint (já avaliou)
+      if (error.code === '23505') {
+        showToast('Você já avaliou este modelo.', 'info');
+      } else {
+        showToast('Erro ao enviar avaliação: ' + error.message, 'error');
+      }
+      return;
+    }
+
+    showToast('✅ Avaliação enviada! Obrigado.', 'success');
+    document.getElementById('cdReviewText').value = '';
+    _reviewStar = 0;
+    renderFormStars();
+    loadReviews();
+  };
+
+  // ── Carrega e renderiza reviews ─────────────────
+  async function loadReviews() {
+    if (!_cdCardId) return;
+
+    const listEl = document.getElementById('cdReviewsList');
+    listEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text-muted)">
+      <div style="width:20px;height:20px;border:2px solid var(--dark-border);border-top-color:var(--fire-orange);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto"></div>
+    </div>`;
+
+    const { data: reviews, error } = await _supabase
+      .from('card_reviews')
+      .select('*')
+      .eq('card_id', _cdCardId)
+      .order('created_at', { ascending: false });
+
+    if (error || !reviews) {
+      listEl.innerHTML = `<div class="cd-reviews-empty">Erro ao carregar avaliações.</div>`;
+      return;
+    }
+
+    // Contagem e média
+    const count = reviews.length;
+    document.getElementById('cdReviewsCount').textContent = count;
+
+    if (count === 0) {
+      listEl.innerHTML = `<div class="cd-reviews-empty">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <div>Nenhuma avaliação ainda.<br>Seja o primeiro!</div>
+      </div>`;
+      updateStarDisplay(0, 0);
+      updateRatingBars([], 0);
+      return;
+    }
+
+    const avg = reviews.reduce((s,r)=>s+r.rating,0) / count;
+    updateStarDisplay(avg, count);
+    updateRatingBars(reviews, count);
+
+    // Renderiza lista
+    listEl.innerHTML = reviews.map(r => {
+      const initials = (r.user_name||'?').slice(0,2).toUpperCase();
+      const stars    = '★'.repeat(r.rating) + '☆'.repeat(5-r.rating);
+      const date     = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'2-digit'}) : '';
+      return `<div class="cd-review-item">
+        <div class="cd-review-top">
+          <div class="cd-review-avatar">${initials}</div>
+          <span class="cd-review-name">${r.user_name||'Usuário'}</span>
+          <span class="cd-review-stars">${stars}</span>
+          <span class="cd-review-date">${date}</span>
+        </div>
+        <div class="cd-review-text">${r.comment||''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function updateStarDisplay(avg, count) {
+    const filled = Math.round(avg);
+    document.getElementById('cdStarsDisplay').textContent =
+      '★'.repeat(filled) + '☆'.repeat(5-filled);
+    document.getElementById('cdRatingNum').textContent = count ? avg.toFixed(1) : '—';
+    document.getElementById('cdRatingCount').textContent = count ? `(${count})` : '';
+  }
+
+  function updateRatingBars(reviews, total) {
+    [5,4,3,2,1].forEach(n => {
+      const cnt = reviews.filter(r=>r.rating===n).length;
+      const pct = total ? Math.round(cnt/total*100) : 0;
+      document.getElementById(`cdBar${n}`).style.width  = pct + '%';
+      document.getElementById(`cdPct${n}`).textContent  = pct + '%';
+    });
+  }
+
+  // Fecha com ESC
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCardDetail();
+  });
+})();
+</script>
 </body>
 </html>
 
