@@ -244,7 +244,7 @@
     .card { background: var(--dark-card); border: 1px solid var(--dark-border); border-radius: 14px; overflow: hidden; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s; cursor: none; animation: fadeUp 0.5s ease both; }
     .card:hover { transform: translateY(-6px); border-color: rgba(255,94,26,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px var(--glow-soft); }
     .card-preview { position: relative; overflow: hidden; height: 220px; background: var(--dark-surface); }
-    .card-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease, filter 0.3s; filter: brightness(0.9); }
+    .card-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease, filter 0.3s, opacity 0.4s; filter: brightness(0.9); opacity: 1; }
     .card:hover .card-preview img { transform: scale(1.05); filter: brightness(1); }
     .card-badge { position: absolute; top: 12px; left: 12px; padding: 0.28rem 0.7rem; border-radius: 100px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
     .badge-new { background: rgba(255,94,26,0.9); color: #fff; }
@@ -1167,25 +1167,22 @@ function updateNavAfterLogin(user) {
   // Botão "Acessar Painel de Controle" apenas para admins
   const existingAdminBtn = document.getElementById('dropdownAdminBtn');
   if (existingAdminBtn) existingAdminBtn.remove();
+  const existingAdminDiv = document.getElementById('dropdownAdminDivider');
+  if (existingAdminDiv) existingAdminDiv.remove();
   if (user.isAdmin) {
     const body = document.querySelector('.user-dropdown-body');
     const divider = body.querySelector('.user-dropdown-divider');
+    const adminDivider = document.createElement('div');
+    adminDivider.id = 'dropdownAdminDivider';
+    adminDivider.className = 'user-dropdown-divider';
     const adminBtn = document.createElement('button');
     adminBtn.id = 'dropdownAdminBtn';
     adminBtn.className = 'user-dropdown-item';
     adminBtn.style.cssText = 'color: var(--fire-orange); font-weight: 600;';
-    adminBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fire-orange)">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-      </svg>
-      Acessar Painel de Controle`;
+    adminBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fire-orange)"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Acessar Painel de Controle`;
     adminBtn.onclick = () => { document.getElementById('userDropdown').classList.remove('open'); window.open('crm.html', '_blank'); };
+    body.insertBefore(adminDivider, divider);
     body.insertBefore(adminBtn, divider);
-    // Adiciona um divisor antes do botão admin para separar visualmente
-    const adminDivider = document.createElement('div');
-    adminDivider.className = 'user-dropdown-divider';
-    body.insertBefore(adminDivider, adminBtn);
   }
 }
 
@@ -1272,14 +1269,13 @@ async function loadCatalogCards(filterCat = 'todos') {
     const priceFormatted = priceNum
       ? `R$ ${priceNum.toLocaleString('pt-BR')} <span>/ único</span>`
       : '';
-    const imgSrc = card.image_url || '';
+    const imgSrc = card.cover_url || (Array.isArray(card.images) && card.images[0]) || '';
 
     return `
       <div class="card reveal" data-cat="${card.category}">
         <div class="card-preview">
           <img src="${imgSrc}" alt="${card.title}" loading="lazy"
-            onload="this.classList.add('loaded')"
-            onerror="this.classList.add('loaded');this.style.objectFit='contain';this.style.opacity='0.15'">
+            onerror="this.style.opacity='0.08'">
           ${badgeHTML}
           <div class="card-overlay">
             <a href="#" class="card-preview-btn"
@@ -1309,10 +1305,6 @@ async function loadCatalogCards(filterCat = 'todos') {
   // Ativa animação reveal nos cards recém criados
   setTimeout(() => {
     grid.querySelectorAll('.card.reveal').forEach(c => c.classList.add('visible'));
-    // Garante imagens já em cache como visíveis
-    grid.querySelectorAll('.card-preview img').forEach(img => {
-      if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
-    });
   }, 60);
 }
 
