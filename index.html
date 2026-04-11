@@ -1232,11 +1232,20 @@
 
   // Render initial idle screen
   drawIdleScreen('Catálogo FireCoding', 'Escolha um modelo', '#FF5E1A');
+  // DEBUG: bright stripe to confirm canvas is being read by GPU
+  ctx.fillStyle = '#FF0000';
+  ctx.fillRect(0, 0, 400, 8);
 
   const screenTex = new THREE.CanvasTexture(screenCanvas);
   screenTex.needsUpdate = true; // force upload after initial draw
   const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
   const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
+  // Ensure texture is properly flagged
+  screenTex.flipY = false;
+  screenTex.generateMipmaps = false;
+  screenTex.minFilter = THREE.LinearFilter;
+  screenTex.magFilter = THREE.LinearFilter;
+  screenTex.needsUpdate = true;
   const screenMesh = new THREE.Mesh(screenGeo, screenMat);
   screenMesh.position.z = 0.098;
   phone.add(screenMesh);
@@ -1458,6 +1467,10 @@
 
     // Screen
     mobileScreenTex = new THREE.CanvasTexture(mobileScreenCanvas);
+    mobileScreenTex.flipY = false;
+    mobileScreenTex.generateMipmaps = false;
+    mobileScreenTex.minFilter = THREE.LinearFilter;
+    mobileScreenTex.magFilter = THREE.LinearFilter;
     const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
     const screenMat = new THREE.MeshBasicMaterial({ map: mobileScreenTex });
     const screenMesh = new THREE.Mesh(screenGeo, screenMat);
