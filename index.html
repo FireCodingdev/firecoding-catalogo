@@ -340,63 +340,75 @@
     }
     .nav-user-badge button:hover { border-color: var(--fire-orange); color: var(--fire-orange); }
 
-    /* ---- AUTH MODAL ---- */
+    /* ---- AUTH MODAL (Dark Theme) ---- */
     .auth-overlay {
       display: none; position: fixed; inset: 0; z-index: 9500;
-      background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(14px);
       align-items: center; justify-content: center;
     }
     .auth-overlay.open { display: flex; }
     .auth-modal {
-      background: #fff; border-radius: 18px; padding: 2rem 2rem 2.2rem;
-      width: 100%; max-width: 420px; position: relative;
-      animation: slideUp 0.3s ease; box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+      background: #131318; border: 1px solid var(--dark-border);
+      border-radius: 20px; padding: 2.5rem 2rem 2.2rem;
+      width: 100%; max-width: 400px; position: relative;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 0 60px rgba(255,94,26,0.12), 0 30px 80px rgba(0,0,0,0.8);
       font-family: 'DM Sans', sans-serif;
     }
     .auth-modal-close {
-      position: absolute; top: 1rem; right: 1rem; background: #f0f0f0;
-      border: none; width: 32px; height: 32px; border-radius: 50%;
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--dark-surface); border: 1px solid var(--dark-border);
+      width: 32px; height: 32px; border-radius: 50%;
       font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: #555; transition: background 0.2s;
+      color: var(--text-muted); transition: all 0.2s;
     }
-    .auth-modal-close:hover { background: #e0e0e0; }
-    .auth-brand { font-size: 1.15rem; font-weight: 800; color: #FF5E1A;
-      font-family: 'Syne', sans-serif; margin-bottom: 1.4rem; }
-    .auth-tabs { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0; }
+    .auth-modal-close:hover { border-color: var(--fire-orange); color: var(--fire-orange); }
+    /* Flame logo */
+    .auth-logo-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 2rem; }
+    .auth-flame { font-size: 3rem; line-height: 1; filter: drop-shadow(0 0 18px rgba(255,94,26,0.7)); }
+    .auth-brand { font-size: 1.5rem; font-weight: 800; color: var(--fire-orange);
+      font-family: 'Syne', sans-serif; margin-bottom: 0; text-shadow: 0 0 20px rgba(255,94,26,0.4); }
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 1.8rem; border-bottom: 1px solid var(--dark-border); }
     .auth-tab {
-      font-size: 0.9rem; font-weight: 600; color: #aaa; cursor: pointer;
-      padding-bottom: 0.6rem; border-bottom: 2px solid transparent; margin-bottom: -2px;
+      flex: 1; font-size: 0.88rem; font-weight: 600; color: var(--text-muted); cursor: pointer;
+      padding: 0.7rem 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
       background: none; border-top: none; border-left: none; border-right: none;
-      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s; text-align: center;
     }
-    .auth-tab.active { color: #FF5E1A; border-bottom-color: #FF5E1A; }
-    .auth-tab-fav { color: #e05; }
+    .auth-tab:hover { color: var(--text-primary); }
+    .auth-tab.active { color: var(--fire-orange); border-bottom-color: var(--fire-orange); }
     .auth-field { margin-bottom: 1rem; }
-    .auth-field label { display: block; font-size: 0.82rem; font-weight: 600; color: #333; margin-bottom: 0.4rem; }
+    .auth-field label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
     .auth-field input {
-      width: 100%; padding: 0.75rem 1rem; border-radius: 10px;
-      border: 1.5px solid #e8e8e8; background: #f6f8ff;
-      font-size: 0.95rem; font-family: 'DM Sans', sans-serif; color: #222;
-      outline: none; transition: border-color 0.2s;
+      width: 100%; padding: 0.8rem 1rem; border-radius: 10px;
+      border: 1.5px solid var(--dark-border); background: var(--dark-surface);
+      font-size: 0.92rem; font-family: 'DM Sans', sans-serif; color: var(--text-primary);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .auth-field input:focus { border-color: #FF5E1A; background: #fff; }
+    .auth-field input::placeholder { color: var(--text-dim); }
+    .auth-field input:focus { border-color: var(--fire-orange); box-shadow: 0 0 0 3px rgba(255,94,26,0.1); }
     .auth-submit {
-      width: 100%; padding: 0.85rem; background: #1a6fff;
-      color: #fff; border: none; border-radius: 10px; font-size: 1rem;
+      width: 100%; padding: 0.9rem; background: #1a6fff;
+      color: #fff; border: none; border-radius: 10px; font-size: 0.95rem;
       font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif;
-      transition: background 0.2s, transform 0.15s; margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s; margin-top: 0.5rem;
+      letter-spacing: 0.02em;
     }
-    .auth-submit:hover { background: #0055ee; transform: translateY(-1px); }
+    .auth-submit:hover { background: #0055ee; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(26,111,255,0.4); }
     .auth-submit:active { transform: translateY(0); }
-    .auth-footer-link { text-align: center; margin-top: 1rem; font-size: 0.82rem; color: #888; }
+    .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .auth-footer-link { text-align: center; margin-top: 1.2rem; font-size: 0.82rem; color: var(--text-muted); }
     .auth-footer-link a { color: #1a6fff; font-weight: 600; text-decoration: none; cursor: pointer; }
     .auth-footer-link a:hover { text-decoration: underline; }
-    .auth-error { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 8px;
-      padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #c00; margin-bottom: 0.8rem; display: none; }
-    .auth-success { background: #f0fff4; border: 1px solid #b2f5c8; border-radius: 8px;
-      padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #0a7a3a; margin-bottom: 0.8rem; display: none; }
+    .auth-error { background: rgba(200,0,0,0.1); border: 1px solid rgba(255,68,68,0.3); border-radius: 8px;
+      padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #ff6b6b; margin-bottom: 0.8rem; display: none; }
+    .auth-success { background: rgba(0,180,80,0.1); border: 1px solid rgba(0,200,100,0.3); border-radius: 8px;
+      padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #4ade80; margin-bottom: 0.8rem; display: none; }
     .auth-panel { display: none; }
     .auth-panel.active { display: block; }
+    /* Loading spinner */
+    .auth-loading { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -997,11 +1009,13 @@
 <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
   <div class="auth-modal">
     <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
-    <div class="auth-brand">🔥 FireCoding</div>
+    <div class="auth-logo-wrap">
+      <div class="auth-flame">🔥</div>
+      <div class="auth-brand">FireCoding</div>
+    </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabEntrar" onclick="switchTab('entrar')">Entrar</button>
       <button class="auth-tab" id="tabCadastrar" onclick="switchTab('cadastrar')">Cadastrar</button>
-      <button class="auth-tab auth-tab-fav" id="tabFav" onclick="switchTab('fav')">❤️ Favoritos</button>
     </div>
 
     <!-- Painel: Entrar -->
@@ -1009,7 +1023,7 @@
       <div class="auth-error" id="loginError"></div>
       <div class="auth-field"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="auth-field"><label>Senha</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
-      <button class="auth-submit" onclick="doLogin()">Entrar</button>
+      <button class="auth-submit" id="btnLogin" onclick="doLogin()">Entrar</button>
       <div class="auth-footer-link">Não tem conta? <a onclick="switchTab('cadastrar')">Cadastre-se grátis</a></div>
     </div>
 
@@ -1020,33 +1034,24 @@
       <div class="auth-field"><label>Nome completo</label><input type="text" id="regName" placeholder="Seu nome"></div>
       <div class="auth-field"><label>E-mail</label><input type="email" id="regEmail" placeholder="seu@email.com"></div>
       <div class="auth-field"><label>Senha</label><input type="password" id="regPassword" placeholder="Mínimo 6 caracteres"></div>
-      <button class="auth-submit" onclick="doRegister()">Criar conta</button>
+      <button class="auth-submit" id="btnRegister" onclick="doRegister()">Criar conta</button>
       <div class="auth-footer-link">Já tem conta? <a onclick="switchTab('entrar')">Entrar</a></div>
-    </div>
-
-    <!-- Painel: Favoritos -->
-    <div class="auth-panel" id="panelFav">
-      <div id="favList" style="font-size:0.85rem;color:#888;text-align:center;padding:1rem 0;">Faça login para ver seus favoritos.</div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ===== AUTH SYSTEM =====
-// Contas admin pré-configuradas (em produção, use backend real)
-const ADMIN_EMAILS = ['firecodingdev@gmail.com', 'admin@firecoding.com'];
+// =====================================================================
+// SUPABASE CONFIG — substitua pelas suas credenciais do projeto
+// =====================================================================
+const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA-ANON-KEY-AQUI';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('fc_users') || '[]'); } catch(e) { return []; }
-}
-function saveUsers(u) { localStorage.setItem('fc_users', JSON.stringify(u)); }
-function getCurrentUser() {
-  try { return JSON.parse(localStorage.getItem('fc_current_user') || 'null'); } catch(e) { return null; }
-}
-function setCurrentUser(u) {
-  localStorage.setItem('fc_current_user', u ? JSON.stringify(u) : 'null');
-}
-
+// =====================================================================
+// AUTH HELPERS
+// =====================================================================
 function openAuthModal() {
   document.getElementById('authOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1056,68 +1061,105 @@ function closeAuthModal() {
   document.body.style.overflow = '';
 }
 function switchTab(tab) {
-  ['entrar','cadastrar','fav'].forEach(t => {
-    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
-    document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+  ['entrar','cadastrar'].forEach(t => {
+    const key = t.charAt(0).toUpperCase() + t.slice(1);
+    document.getElementById('tab' + key).classList.toggle('active', t === tab);
+    document.getElementById('panel' + key).classList.toggle('active', t === tab);
   });
 }
 
 function showAuthError(id, msg) {
   const el = document.getElementById(id);
   el.textContent = msg; el.style.display = 'block';
-  setTimeout(() => { el.style.display = 'none'; }, 4000);
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function showAuthSuccess(id, msg) {
   const el = document.getElementById(id);
   el.textContent = msg; el.style.display = 'block';
 }
+function setButtonLoading(id, loading) {
+  const btn = document.getElementById(id);
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="auth-loading"></span>' : (id === 'btnLogin' ? 'Entrar' : 'Criar conta');
+}
 
-function doLogin() {
+// =====================================================================
+// LOGIN via Supabase Auth
+// =====================================================================
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPassword').value;
   if (!email || !pass) { showAuthError('loginError', 'Preencha todos os campos.'); return; }
 
-  const users = getUsers();
-  const user  = users.find(u => u.email === email && u.password === pass);
+  setButtonLoading('btnLogin', true);
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+  setButtonLoading('btnLogin', false);
 
-  if (!user) { showAuthError('loginError', 'E-mail ou senha incorretos.'); return; }
+  if (error) {
+    const msg = error.message.includes('Invalid') ? 'E-mail ou senha incorretos.' : error.message;
+    showAuthError('loginError', msg); return;
+  }
 
-  const isAdmin = ADMIN_EMAILS.includes(email);
-  const session = { ...user, isAdmin, loginAt: Date.now() };
-  setCurrentUser(session);
+  // Busca perfil do usuário na tabela profiles
+  const { data: profile } = await _supabase.from('profiles').select('*').eq('id', data.user.id).single();
+  const isAdmin = profile?.role === 'admin';
+  const session = { id: data.user.id, email, name: profile?.name || email.split('@')[0], isAdmin };
+
   closeAuthModal();
   updateNavAfterLogin(session);
 
   if (isAdmin) {
     setTimeout(() => { window.open('crm.html', '_blank'); }, 300);
+  } else {
+    showUserDashboard(session);
   }
 }
 
-function doRegister() {
+// =====================================================================
+// REGISTRO via Supabase Auth
+// =====================================================================
+async function doRegister() {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('regPassword').value;
   if (!name || !email || !pass) { showAuthError('registerError', 'Preencha todos os campos.'); return; }
   if (pass.length < 6) { showAuthError('registerError', 'Senha deve ter no mínimo 6 caracteres.'); return; }
-  const users = getUsers();
-  if (users.find(u => u.email === email)) { showAuthError('registerError', 'Este e-mail já está cadastrado.'); return; }
-  users.push({ name, email, password: pass, createdAt: Date.now(), favorites: [] });
-  saveUsers(users);
-  showAuthSuccess('registerSuccess', '✅ Conta criada! Fazendo login...');
+
+  setButtonLoading('btnRegister', true);
+  const { data, error } = await _supabase.auth.signUp({
+    email, password: pass,
+    options: { data: { name } }
+  });
+  setButtonLoading('btnRegister', false);
+
+  if (error) { showAuthError('registerError', error.message); return; }
+
+  // Cria perfil na tabela profiles (role default: 'client')
+  if (data.user) {
+    await _supabase.from('profiles').upsert({ id: data.user.id, name, email, role: 'client' });
+  }
+
+  showAuthSuccess('registerSuccess', '✅ Conta criada! Verifique seu e-mail para confirmar (ou faça login direto).');
   setTimeout(() => {
     document.getElementById('loginEmail').value = email;
     document.getElementById('loginPassword').value = pass;
     switchTab('entrar');
     doLogin();
-  }, 1200);
+  }, 2000);
 }
 
-function logoutUser() {
-  setCurrentUser(null);
+// =====================================================================
+// LOGOUT
+// =====================================================================
+async function logoutUser() {
+  await _supabase.auth.signOut();
   document.getElementById('navLoginBtn').style.display = '';
   document.getElementById('navUserBadge').style.display = 'none';
 }
 
+// =====================================================================
+// NAV UPDATE
+// =====================================================================
 function updateNavAfterLogin(user) {
   document.getElementById('navLoginBtn').style.display = 'none';
   const badge = document.getElementById('navUserBadge');
@@ -1125,18 +1167,45 @@ function updateNavAfterLogin(user) {
   document.getElementById('navUserName').textContent = '👤 ' + user.name.split(' ')[0] + (user.isAdmin ? ' 🔧' : '');
 }
 
-// Auto-restore session on load
-window.addEventListener('DOMContentLoaded', () => {
-  const u = getCurrentUser();
-  if (u) updateNavAfterLogin(u);
-});
+// =====================================================================
+// CLIENT AREA — modal simples para cliente (carrinho/pedido)
+// =====================================================================
+function showUserDashboard(user) {
+  // Abre modal de pedido/conta — personalize conforme seu fluxo
+  alert('Bem-vindo, ' + user.name + '! Acesse o catálogo e clique em "Contratar" para fazer seu pedido.');
+}
 
-// tabFav fix (switch 'fav')
-document.getElementById('tabFav').addEventListener('click', () => {
-  ['entrar','cadastrar','fav'].forEach(t => {
-    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === 'fav');
-    document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === 'fav');
+// =====================================================================
+// CONTRATAR — verifica login antes de prosseguir
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Intercepta clicks em "Contratar"
+  document.addEventListener('click', async (e) => {
+    const a = e.target.closest('.card-action');
+    if (!a) return;
+    e.preventDefault();
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      openAuthModal(); return;
+    }
+    // Usuário logado: redireciona para WhatsApp com info do card
+    const card = a.closest('.card');
+    const title = card?.querySelector('.card-title')?.textContent || 'Modelo';
+    const price = card?.querySelector('.price')?.textContent?.trim() || '';
+    const msg = encodeURIComponent(`Olá! Quero contratar: *${title}* (${price}). E-mail: ${session.user.email}`);
+    window.open('https://wa.me/5574988482293?text=' + msg, '_blank');
   });
+
+  // Restaura sessão ao carregar
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) {
+      const { data: profile } = await _supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      const isAdmin = profile?.role === 'admin';
+      const user = { id: session.user.id, email: session.user.email, name: profile?.name || session.user.email.split('@')[0], isAdmin };
+      updateNavAfterLogin(user);
+    }
+  })();
 });
 </script>
 </body>
