@@ -88,7 +88,7 @@
     .catalog-main { flex: 1; min-width: 0; }
     .phone-panel {
       width: 340px; flex-shrink: 0; position: sticky; top: 90px;
-      display: none; flex-direction: column; align-items: center; gap: 1rem;
+      display: none; flex-direction: column; align-items: center; gap: 0.75rem;
     }
     .phone-panel.visible { display: flex; }
     .phone-panel-label {
@@ -98,11 +98,35 @@
     .phone-panel-hint {
       font-size: 0.72rem; color: var(--text-muted); text-align: center; line-height: 1.5;
     }
+    .phone-active-label {
+      font-size: 0.78rem; color: var(--text-primary); font-weight: 500;
+      background: rgba(255,94,26,0.1); border: 1px solid rgba(255,94,26,0.25);
+      padding: 0.3rem 0.85rem; border-radius: 100px; max-width: 320px;
+      text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: opacity 0.3s;
+    }
+    .phone-active-label.hidden { opacity: 0; }
+    .phone-zoom-controls {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .zoom-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--dark-card); border: 1px solid var(--dark-border);
+      color: var(--text-muted); font-size: 1.1rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; line-height: 1; user-select: none;
+    }
+    .zoom-btn:hover { border-color: var(--fire-orange); color: var(--fire-orange); background: var(--glow-soft); }
+    .zoom-label { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.06em; }
     #phoneCanvas {
       width: 340px !important; height: 520px !important;
       border-radius: 16px; cursor: grab;
     }
     #phoneCanvas:active { cursor: grabbing; }
+
+    /* Card hover: "Ver Preview" button triggers phone */
+    .card-preview-btn { cursor: pointer !important; }
+
     @media (max-width: 1100px) { .phone-panel { display: none !important; } .catalog-layout { display: block; } }
     .catalog-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem; }
     .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
@@ -274,7 +298,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Agência Digital">
         <span class="card-badge badge-popular">Popular</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Agência Digital Premium" data-cat="negocio" data-price="R$ 490" data-badge="Popular" data-img="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Negócios</div>
@@ -289,7 +313,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80" alt="Clínica">
         <span class="card-badge badge-new">Novo</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Clínica & Consultório" data-cat="saude" data-price="R$ 390" data-badge="Novo" data-img="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Saúde & Bem-estar</div>
@@ -304,7 +328,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="SaaS">
         <span class="card-badge badge-premium">Premium</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="SaaS Launch Page" data-cat="tech" data-price="R$ 690" data-badge="Premium" data-img="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Tech & SaaS</div>
@@ -319,7 +343,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&q=80" alt="Produto">
         <span class="card-badge badge-popular">Popular</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Página de Produto" data-cat="ecommerce" data-price="R$ 490" data-badge="Popular" data-img="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">E-commerce</div>
@@ -334,7 +358,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80" alt="Evento">
         <span class="card-badge badge-new">Novo</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Evento & Congresso" data-cat="evento" data-price="R$ 540" data-badge="Novo" data-img="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Eventos</div>
@@ -349,7 +373,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&q=80" alt="Curso">
         <span class="card-badge badge-popular">Popular</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Lançamento de Curso" data-cat="educacao" data-price="R$ 590" data-badge="Popular" data-img="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Educação</div>
@@ -363,7 +387,7 @@
     <div class="card reveal" data-cat="negocio">
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80" alt="Consultoria">
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Consultoria & Mentoria" data-cat="negocio" data-price="R$ 450" data-badge="" data-img="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Negócios</div>
@@ -378,7 +402,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80" alt="Personal">
         <span class="card-badge badge-new">Novo</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Personal Trainer" data-cat="saude" data-price="R$ 390" data-badge="Novo" data-img="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Saúde & Bem-estar</div>
@@ -393,7 +417,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80" alt="Startup">
         <span class="card-badge badge-premium">Premium</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Startup / App Mobile" data-cat="tech" data-price="R$ 750" data-badge="Premium" data-img="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Tech & SaaS</div>
@@ -408,7 +432,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1503602642458-232111445657?w=600&q=80" alt="Moda">
         <span class="card-badge badge-popular">Popular</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Moda & Lifestyle" data-cat="ecommerce" data-price="R$ 520" data-badge="Popular" data-img="https://images.unsplash.com/photo-1503602642458-232111445657?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">E-commerce</div>
@@ -422,7 +446,7 @@
     <div class="card reveal" data-cat="educacao">
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=600&q=80" alt="Ebook">
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="E-book & Isca Digital" data-cat="educacao" data-price="R$ 290" data-badge="" data-img="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Educação</div>
@@ -437,7 +461,7 @@
       <div class="card-preview">
         <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&q=80" alt="Webinar">
         <span class="card-badge badge-new">Novo</span>
-        <div class="card-overlay"><a href="#contato" class="card-preview-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
+        <div class="card-overlay"><a href="#" class="card-preview-btn" data-title="Webinar & Lives" data-cat="evento" data-price="R$ 340" data-badge="Novo" data-img="https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&q=80" onclick="loadPhonePreview(event, this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Preview</a></div>
       </div>
       <div class="card-body">
         <div class="card-category">Eventos</div>
@@ -454,8 +478,14 @@
   <!-- ===== PHONE 3D MOCKUP ===== -->
   <aside class="phone-panel" id="phonePanel">
     <span class="phone-panel-label">Visualização do App</span>
+    <div class="phone-active-label hidden" id="phoneActiveLabel">Passe o mouse em um modelo</div>
     <canvas id="phoneCanvas"></canvas>
-    <p class="phone-panel-hint">Arraste para girar · Scroll para zoom</p>
+    <div class="phone-zoom-controls">
+      <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
+      <span class="zoom-label">ZOOM</span>
+      <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+    </div>
+    <p class="phone-panel-hint">Arraste para inclinar · Clique "Ver Preview" para carregar</p>
   </aside>
 
   </div><!-- /catalog-layout -->
@@ -634,8 +664,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function() {
-  const canvas  = document.getElementById('phoneCanvas');
-  const panel   = document.getElementById('phonePanel');
+  const canvas = document.getElementById('phoneCanvas');
+  const panel  = document.getElementById('phonePanel');
   if (!canvas) return;
 
   const W = 340, H = 520;
@@ -651,275 +681,354 @@
   // Lighting
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
   const key = new THREE.DirectionalLight(0xffffff, 1.2);
-  key.position.set(3, 5, 4);
-  scene.add(key);
+  key.position.set(3, 5, 4); scene.add(key);
   const fill = new THREE.DirectionalLight(0xFF5E1A, 0.4);
-  fill.position.set(-3, -2, 2);
-  scene.add(fill);
+  fill.position.set(-3, -2, 2); scene.add(fill);
   const rim = new THREE.DirectionalLight(0x4488ff, 0.3);
-  rim.position.set(0, -4, -3);
-  scene.add(rim);
+  rim.position.set(0, -4, -3); scene.add(rim);
 
   // Phone group
   const phone = new THREE.Group();
   scene.add(phone);
 
   // Body
-  const bodyGeo = new THREE.BoxGeometry(1.8, 3.6, 0.18);
-  // Round the body edges with bevel — simulate with slightly smaller inner
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0x111118, metalness: 0.85, roughness: 0.15
-  });
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  phone.add(body);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111118, metalness: 0.85, roughness: 0.15 });
+  phone.add(new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.6, 0.18), bodyMat));
 
-  // Screen bezel (slightly inset)
-  const bezelGeo = new THREE.BoxGeometry(1.62, 3.35, 0.01);
-  const bezelMat = new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.4 });
-  const bezel = new THREE.Mesh(bezelGeo, bezelMat);
+  // Bezel
+  const bezel = new THREE.Mesh(
+    new THREE.BoxGeometry(1.62, 3.35, 0.01),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.4 })
+  );
   bezel.position.z = 0.096;
   phone.add(bezel);
 
-  // Screen (canvas texture)
+  // Screen canvas texture
   const screenCanvas = document.createElement('canvas');
   screenCanvas.width = 400; screenCanvas.height = 800;
   const ctx = screenCanvas.getContext('2d');
 
-  function drawScreen(label, sub, color) {
+  // --- IDLE / CATEGORY screen (text-based, shown before any card is clicked) ---
+  function drawIdleScreen(label, sub, accentColor) {
     ctx.clearRect(0, 0, 400, 800);
-    // Background gradient
     const bg = ctx.createLinearGradient(0, 0, 0, 800);
-    bg.addColorStop(0, '#0d0d18');
-    bg.addColorStop(1, '#070710');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 400, 800);
+    bg.addColorStop(0, '#0d0d18'); bg.addColorStop(1, '#070710');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, 400, 800);
 
     // Status bar
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.fillRect(0, 0, 400, 40);
-    ctx.fillStyle = '#fff';
-    ctx.font = '500 13px DM Sans, sans-serif';
-    ctx.fillText('9:41', 20, 26);
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText('▌▌▌  ☁  🔋', 290, 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(0, 0, 400, 38);
+    ctx.fillStyle = '#fff'; ctx.font = '500 13px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('9:41', 18, 24);
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '11px sans-serif'; ctx.fillText('●●● ◼ 🔋', 388, 24);
 
-    // App hero area
-    const heroGrad = ctx.createLinearGradient(0, 40, 0, 340);
-    heroGrad.addColorStop(0, color + 'cc');
-    heroGrad.addColorStop(1, color + '11');
-    ctx.fillStyle = heroGrad;
-    ctx.fillRect(0, 40, 400, 300);
+    // Hero gradient band
+    const heroGrad = ctx.createLinearGradient(0, 38, 0, 300);
+    heroGrad.addColorStop(0, accentColor + 'bb'); heroGrad.addColorStop(1, accentColor + '08');
+    ctx.fillStyle = heroGrad; ctx.fillRect(0, 38, 400, 262);
 
-    // App icon placeholder
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.beginPath();
-    ctx.roundRect(160, 90, 80, 80, 16);
-    ctx.fill();
-    ctx.fillStyle = color;
-    ctx.font = 'bold 36px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🔥', 200, 150);
+    // Icon circle
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
+    ctx.beginPath(); ctx.arc(200, 130, 44, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = accentColor; ctx.font = 'bold 34px sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('🔥', 200, 145);
 
-    // Title
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 22px Syne, sans-serif';
-    ctx.textAlign = 'center';
+    // Title & subtitle
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(label, 200, 210);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '13px DM Sans, sans-serif';
-    ctx.fillText(sub, 200, 235);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '13px sans-serif';
+    ctx.fillText(sub, 200, 232);
 
-    // CTA button
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.roundRect(100, 270, 200, 44, 22);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 15px DM Sans, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Ver Modelos →', 200, 298);
+    // CTA pill
+    ctx.fillStyle = accentColor;
+    ctx.beginPath(); ctx.roundRect(110, 264, 180, 38, 19); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Ver Modelos →', 200, 288);
 
-    // Cards grid below
-    const cards = [
-      { title: 'SaaS Launch', price: 'R$ 690', badge: 'Premium' },
-      { title: 'Startup App', price: 'R$ 750', badge: 'Premium' },
-      { title: 'Agência Digital', price: 'R$ 490', badge: 'Popular' },
-      { title: 'E-commerce', price: 'R$ 490', badge: 'Popular' },
-    ];
-    cards.forEach((c, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = 20 + col * 190;
-      const y = 360 + row * 170;
+    // Prompt hint
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '11px sans-serif';
+    ctx.fillText('Clique "Ver Preview" em um modelo', 200, 340);
+
+    // Mini card skeletons
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = 18 + col * 192, y = 368 + row * 200;
       ctx.fillStyle = '#16161d';
-      ctx.beginPath();
-      ctx.roundRect(x, y, 172, 155, 12);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,94,26,0.2)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      // Image placeholder
-      ctx.fillStyle = 'rgba(255,255,255,0.05)';
-      ctx.beginPath();
-      ctx.roundRect(x + 8, y + 8, 156, 80, 8);
-      ctx.fill();
-      // Badge
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.roundRect(x + 8, y + 16, 55, 20, 10);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 9px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(c.badge.toUpperCase(), x + 14, y + 30);
-      // Title
-      ctx.fillStyle = '#f4f4f6';
-      ctx.font = 'bold 12px DM Sans, sans-serif';
-      ctx.fillText(c.title, x + 10, y + 105);
-      // Price
-      ctx.fillStyle = color;
-      ctx.font = 'bold 13px DM Sans, sans-serif';
-      ctx.fillText(c.price, x + 10, y + 124);
-      // Button
-      ctx.fillStyle = 'rgba(255,94,26,0.15)';
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(x + 8, y + 132, 156, 15, 7);
-      ctx.fill(); ctx.stroke();
-      ctx.fillStyle = color;
-      ctx.font = '10px DM Sans';
-      ctx.textAlign = 'center';
-      ctx.fillText('Contratar →', x + 86, y + 143);
-    });
+      ctx.beginPath(); ctx.roundRect(x, y, 174, 182, 12); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,94,26,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.beginPath(); ctx.roundRect(x + 8, y + 8, 158, 90, 8); ctx.fill();
+      // shimmer lines
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(x + 10, y + 110, 80, 8);
+      ctx.fillRect(x + 10, y + 126, 55, 7);
+      ctx.fillStyle = accentColor + '33';
+      ctx.beginPath(); ctx.roundRect(x + 10, y + 145, 154, 26, 7); ctx.fill();
+    }
   }
 
-  // Default screen
-  drawScreen('App Mobile', 'Modelos prontos', '#FF5E1A');
+  // --- CARD PREVIEW screen (shows the real card image on the phone) ---
+  function drawCardScreen(title, price, badge, accentColor, imgElement) {
+    ctx.clearRect(0, 0, 400, 800);
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, 800);
+    bg.addColorStop(0, '#0b0b14'); bg.addColorStop(1, '#070710');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, 400, 800);
+
+    // Status bar
+    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(0, 0, 400, 38);
+    ctx.fillStyle = '#fff'; ctx.font = '500 13px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('9:41', 18, 24);
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '11px sans-serif'; ctx.fillText('●●● ◼ 🔋', 388, 24);
+
+    // Navbar strip
+    ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(0, 38, 400, 44);
+    ctx.fillStyle = accentColor; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('← Catálogo', 16, 64);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Preview do Modelo', 200, 64);
+
+    // Hero image — real screenshot from card
+    const imgY = 82, imgH = 240;
+    if (imgElement && imgElement.complete) {
+      // draw with subtle rounded clip
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(0, imgY, 400, imgH, 0); ctx.clip();
+      ctx.drawImage(imgElement, 0, imgY, 400, imgH);
+      ctx.restore();
+      // gradient overlay at bottom of image
+      const imgOverlay = ctx.createLinearGradient(0, imgY + imgH * 0.5, 0, imgY + imgH);
+      imgOverlay.addColorStop(0, 'transparent'); imgOverlay.addColorStop(1, '#0b0b14');
+      ctx.fillStyle = imgOverlay; ctx.fillRect(0, imgY, 400, imgH);
+    } else {
+      // fallback solid
+      ctx.fillStyle = accentColor + '33'; ctx.fillRect(0, imgY, 400, imgH);
+      ctx.fillStyle = accentColor; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('🔥', 200, imgY + imgH / 2 + 10);
+    }
+
+    // Badge pill
+    if (badge) {
+      ctx.fillStyle = accentColor + 'ee';
+      ctx.beginPath(); ctx.roundRect(16, imgY + imgH - 36, 70, 22, 11); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(badge.toUpperCase(), 24, imgY + imgH - 20);
+    }
+
+    // Card info block
+    const infoY = imgY + imgH + 10;
+    ctx.fillStyle = '#f4f4f6'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'left';
+    // word-wrap title
+    const words = title.split(' '), lineH = 24;
+    let line = '', lineY = infoY + 22, lines = [];
+    words.forEach(w => {
+      const test = line ? line + ' ' + w : w;
+      ctx.font = 'bold 17px sans-serif';
+      if (ctx.measureText(test).width > 360) { lines.push(line); line = w; }
+      else line = test;
+    });
+    lines.push(line);
+    lines.forEach((l, i) => { ctx.fillStyle = '#f4f4f6'; ctx.fillText(l, 18, infoY + 22 + i * lineH); });
+
+    const afterTitle = infoY + 22 + lines.length * lineH + 6;
+
+    // Price
+    ctx.fillStyle = accentColor; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(price, 18, afterTitle + 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '11px sans-serif';
+    ctx.fillText('/ pagamento único', 18, afterTitle + 44);
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(18, afterTitle + 58); ctx.lineTo(382, afterTitle + 58); ctx.stroke();
+
+    // Features bullets
+    const features = ['✔ Responsivo e rápido', '✔ SEO otimizado', '✔ Suporte 30 dias'];
+    features.forEach((f, i) => {
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(f, 18, afterTitle + 78 + i * 22);
+    });
+
+    // CTA button
+    const ctaY = afterTitle + 148;
+    ctx.fillStyle = accentColor;
+    ctx.beginPath(); ctx.roundRect(18, ctaY, 364, 46, 10); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Contratar este modelo →', 200, ctaY + 29);
+
+    // Second button outline
+    ctx.strokeStyle = accentColor; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(18, ctaY + 56, 364, 40, 10); ctx.stroke();
+    ctx.fillStyle = accentColor; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Falar no WhatsApp', 200, ctaY + 81);
+  }
+
+  // Color map by category
+  const CAT_COLORS = {
+    tech: '#FF5E1A', negocio: '#FFA040', ecommerce: '#e53a1a',
+    saude: '#40c090', evento: '#9060ff', educacao: '#218fcf', todos: '#FF5E1A'
+  };
+
+  // Render initial idle screen
+  drawIdleScreen('Catálogo FireCoding', 'Escolha um modelo', '#FF5E1A');
 
   const screenTex = new THREE.CanvasTexture(screenCanvas);
   const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
   const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
-  const screen = new THREE.Mesh(screenGeo, screenMat);
-  screen.position.z = 0.098;
-  phone.add(screen);
+  const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+  screenMesh.position.z = 0.098;
+  phone.add(screenMesh);
 
   // Notch
-  const notchGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.42, 24);
-  const notchMat = new THREE.MeshStandardMaterial({ color: 0x0a0a10 });
-  const notch = new THREE.Mesh(notchGeo, notchMat);
-  notch.rotation.z = Math.PI / 2;
-  notch.position.set(0, 1.62, 0.1);
+  const notch = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.12, 0.42, 24),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a10 })
+  );
+  notch.rotation.z = Math.PI / 2; notch.position.set(0, 1.62, 0.1);
   phone.add(notch);
 
   // Side buttons
-  const btnGeo = new THREE.BoxGeometry(0.06, 0.36, 0.14);
   const btnMat = new THREE.MeshStandardMaterial({ color: 0x1a1a25, metalness: 0.9, roughness: 0.1 });
   [-0.7, -1.1].forEach(y => {
-    const btn = new THREE.Mesh(btnGeo, btnMat);
-    btn.position.set(-0.93, y, 0);
-    phone.add(btn);
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.36, 0.14), btnMat);
+    b.position.set(-0.93, y, 0); phone.add(b);
   });
-  const pBtn = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.14), btnMat);
-  pBtn.position.set(0.93, -0.5, 0);
-  phone.add(pBtn);
+  const pb = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.14), btnMat);
+  pb.position.set(0.93, -0.5, 0); phone.add(pb);
 
   // Camera lens
   const lensRing = new THREE.Mesh(
     new THREE.TorusGeometry(0.16, 0.04, 16, 32),
     new THREE.MeshStandardMaterial({ color: 0x222230, metalness: 1, roughness: 0.1 })
   );
-  lensRing.position.set(-0.4, 1.35, -0.1);
-  phone.add(lensRing);
-  const lens = new THREE.Mesh(
+  lensRing.position.set(-0.4, 1.35, -0.1); phone.add(lensRing);
+  const lensCover = new THREE.Mesh(
     new THREE.CircleGeometry(0.13, 32),
     new THREE.MeshStandardMaterial({ color: 0x050508, metalness: 0.5, roughness: 0.1 })
   );
-  lens.position.set(-0.4, 1.35, -0.08);
-  phone.add(lens);
+  lensCover.position.set(-0.4, 1.35, -0.08); phone.add(lensCover);
 
-  // Initial tilt
-  phone.rotation.x = 0.12;
-  phone.rotation.y = -0.25;
+  // Initial subtle tilt — no auto-rotation
+  phone.rotation.x = 0.10;
+  phone.rotation.y = -0.20;
 
-  // Drag interaction
+  // --- DRAG to tilt (no rotation, just tilt within limits) ---
   let isDragging = false, lastX = 0, lastY = 0;
   let velX = 0, velY = 0;
-  let autoRot = true;
+  // Target tilt (smooth interpolation target)
+  let targetRX = 0.10, targetRY = -0.20;
+  const MAX_TILT = 0.55;
 
-  canvas.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; autoRot = false; velX = 0; velY = 0; });
+  canvas.addEventListener('mousedown', e => {
+    isDragging = true; lastX = e.clientX; lastY = e.clientY; velX = 0; velY = 0;
+  });
   window.addEventListener('mouseup', () => { isDragging = false; });
   window.addEventListener('mousemove', e => {
     if (!isDragging) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    velX = dy * 0.008;
-    velY = dx * 0.008;
-    phone.rotation.x += velX;
-    phone.rotation.y += velY;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    velX = dy * 0.007; velY = dx * 0.007;
+    targetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRX + velX));
+    targetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRY + velY));
     lastX = e.clientX; lastY = e.clientY;
   });
 
-  // Touch
-  canvas.addEventListener('touchstart', e => { isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; autoRot = false; });
+  // Touch drag
+  canvas.addEventListener('touchstart', e => {
+    isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; velX = 0; velY = 0;
+  });
   canvas.addEventListener('touchend', () => { isDragging = false; });
   canvas.addEventListener('touchmove', e => {
     if (!isDragging) return;
-    const dx = e.touches[0].clientX - lastX;
-    const dy = e.touches[0].clientY - lastY;
-    velX = dy * 0.008;
-    velY = dx * 0.008;
-    phone.rotation.x += velX;
-    phone.rotation.y += velY;
+    const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
+    velX = dy * 0.007; velY = dx * 0.007;
+    targetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRX + velX));
+    targetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRY + velY));
     lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
   }, { passive: true });
 
-  // Scroll = zoom
-  canvas.addEventListener('wheel', e => {
-    camera.position.z = Math.max(3, Math.min(9, camera.position.z + e.deltaY * 0.01));
-  }, { passive: true });
+  // --- ZOOM via buttons (no scroll zoom) ---
+  const zoomIn  = document.getElementById('zoomIn');
+  const zoomOut = document.getElementById('zoomOut');
+  const ZOOM_MIN = 3.5, ZOOM_MAX = 8.5, ZOOM_STEP = 0.5;
+  let targetZ = camera.position.z;
+  if (zoomIn)  zoomIn.addEventListener('click',  () => { targetZ = Math.max(ZOOM_MIN, targetZ - ZOOM_STEP); });
+  if (zoomOut) zoomOut.addEventListener('click', () => { targetZ = Math.min(ZOOM_MAX, targetZ + ZOOM_STEP); });
 
-  // Update screen when category changes — exposed globally
-  window.updatePhoneScreen = function(cat) {
-    const cfg = {
-      'tech':      { label: 'Tech & SaaS',    sub: 'Apps e Software', color: '#FF5E1A' },
-      'negocio':   { label: 'Negócios',        sub: 'Soluções B2B', color: '#FFA040' },
-      'ecommerce': { label: 'E-commerce',      sub: 'Lojas Virtuais', color: '#e53a1a' },
-      'saude':     { label: 'Saúde & Bem-estar', sub: 'Clínicas e Personal', color: '#40c090' },
-      'evento':    { label: 'Eventos',         sub: 'Congressos e Lives', color: '#9060ff' },
-      'educacao':  { label: 'Educação',        sub: 'Cursos e E-books', color: '#218fcf' },
-      'todos':     { label: 'Todos os Modelos', sub: 'Escolha o seu', color: '#FF5E1A' },
-    };
-    const c = cfg[cat] || cfg['todos'];
-    drawScreen(c.label, c.sub, c.color);
-    screenTex.needsUpdate = true;
+  // --- LOAD CARD IMAGE on "Ver Preview" click ---
+  // Exposed globally so inline onclick can call it
+  window.loadPhonePreview = function(event, btn) {
+    event.preventDefault();
+    const title  = btn.getAttribute('data-title')  || 'Modelo';
+    const cat    = btn.getAttribute('data-cat')    || 'todos';
+    const price  = btn.getAttribute('data-price')  || '';
+    const badge  = btn.getAttribute('data-badge')  || '';
+    const imgSrc = btn.getAttribute('data-img')    || '';
+    const color  = CAT_COLORS[cat] || '#FF5E1A';
+
+    // Update active label
+    const lbl = document.getElementById('phoneActiveLabel');
+    if (lbl) { lbl.textContent = '📱 ' + title; lbl.classList.remove('hidden'); }
+
+    if (imgSrc) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        drawCardScreen(title, price, badge, color, img);
+        screenTex.needsUpdate = true;
+      };
+      img.onerror = () => {
+        drawCardScreen(title, price, badge, color, null);
+        screenTex.needsUpdate = true;
+      };
+      img.src = imgSrc;
+    } else {
+      drawCardScreen(title, price, badge, color, null);
+      screenTex.needsUpdate = true;
+    }
+
+    // Gentle "snap back to front" on preview load
+    targetRX = 0.08; targetRY = -0.12;
   };
 
-  // Show/hide panel based on cat=app param (also toggleable by filter)
-  function checkVisibility() {
-    const params = new URLSearchParams(window.location.search);
-    const cat = params.get('cat');
-    // Show for app/tech/todos or if we're showing tech cards
-    panel.classList.toggle('visible', true); // always show
-  }
-  checkVisibility();
+  // --- FILTER change still updates idle screen ---
+  window.updatePhoneScreen = function(cat) {
+    const cfg = {
+      tech:      { label: 'Tech & SaaS',       sub: 'Apps e Software' },
+      negocio:   { label: 'Negócios',           sub: 'Soluções B2B' },
+      ecommerce: { label: 'E-commerce',         sub: 'Lojas Virtuais' },
+      saude:     { label: 'Saúde & Bem-estar',  sub: 'Clínicas e Personal' },
+      evento:    { label: 'Eventos',            sub: 'Congressos e Lives' },
+      educacao:  { label: 'Educação',           sub: 'Cursos e E-books' },
+      todos:     { label: 'Catálogo FireCoding', sub: 'Escolha um modelo' },
+    };
+    const c   = cfg[cat] || cfg['todos'];
+    const col = CAT_COLORS[cat] || '#FF5E1A';
+    drawIdleScreen(c.label, c.sub, col);
+    screenTex.needsUpdate = true;
+    const lbl = document.getElementById('phoneActiveLabel');
+    if (lbl) lbl.classList.add('hidden');
+  };
 
-  // Animate
+  // Always show panel
+  panel.classList.add('visible');
+
+  // --- RENDER LOOP: smooth tilt + zoom, NO auto-rotation ---
   function animate() {
     requestAnimationFrame(animate);
-    if (!isDragging) {
-      // Inertia
-      velX *= 0.92;
-      velY *= 0.92;
-      phone.rotation.x += velX;
-      phone.rotation.y += velY;
-      // Gentle float when idle
-      if (Math.abs(velX) < 0.0005 && Math.abs(velY) < 0.0005) {
-        phone.rotation.y += 0.004;
-        phone.rotation.x = 0.12 + Math.sin(Date.now() * 0.001) * 0.04;
-      }
-    }
+
+    // Smooth interpolate tilt
+    phone.rotation.x += (targetRX - phone.rotation.x) * 0.08;
+    phone.rotation.y += (targetRY - phone.rotation.y) * 0.08;
+
+    // Smooth zoom
+    camera.position.z += (targetZ - camera.position.z) * 0.1;
+
+    // Subtle idle float (position only, no rotation spin)
+    const t = Date.now() * 0.0008;
+    phone.position.y = Math.sin(t) * 0.04;
+
     renderer.render(scene, camera);
   }
   animate();
