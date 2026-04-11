@@ -87,7 +87,7 @@
     .catalog-layout { display: flex; gap: 3rem; align-items: flex-start; }
     .catalog-main { flex: 1; min-width: 0; }
     .phone-panel {
-      width: 340px; flex-shrink: 0; position: sticky; top: 90px;
+      width: 300px; flex-shrink: 0; position: sticky; top: 90px;
       display: none; flex-direction: column; align-items: center; gap: 0.75rem;
     }
     .phone-panel.visible { display: flex; }
@@ -118,11 +118,52 @@
     }
     .zoom-btn:hover { border-color: var(--fire-orange); color: var(--fire-orange); background: var(--glow-soft); }
     .zoom-label { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.06em; }
-    #phoneCanvas {
-      width: 340px !important; height: 520px !important;
-      border-radius: 16px; cursor: grab;
+    /* ---- 2D PHONE MOCKUP ---- */
+    .phone-mockup-wrap {
+      position: relative; width: 260px; height: 520px;
+      overflow: visible;
+      filter: drop-shadow(0 24px 48px rgba(0,0,0,0.85)) drop-shadow(0 0 36px rgba(255,94,26,0.25));
+      animation: phoneFadeUp 0.5s ease both;
     }
-    #phoneCanvas:active { cursor: grabbing; }
+    @keyframes phoneFadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .phone-mockup-frame { width: 100%; height: 100%; display: block; }
+    /* Overlay: SVG sits absolutely on top of the screen area */
+    .phone-mockup-overlay {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
+    }
+    /*
+      viewBox 280×560 → rendered 260×520 (ratio 0.9286)
+      Screen rect in SVG: x=14 y=14 w=252 h=532
+      Scaled: left=14×(260/280)=13px  top=14×(520/560)=13px
+              right=13px  bottom=13px
+      Notch pill: y=18 h=28 → bottom edge at y=46 → 46×(520/560)=43px from top
+      Home bar: y=536 → (560-536)×(520/560)=22px from bottom
+      We want the <img> to fill from just below notch to just above home bar,
+      but the SVG body/screen background already provides that framing,
+      so we clip the img within the full screen rect and let the SVG notch overlay it.
+    */
+    .phone-screen-area {
+      position: absolute; z-index: 1;
+      top: 13px; left: 13px; right: 13px; bottom: 13px;
+      border-radius: 30px; overflow: hidden; background: #0a0a12;
+    }
+    .phone-screen-area img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top center;
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .phone-screen-area img.loaded { opacity: 1; }
+    .phone-screen-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 0.6rem;
+      color: rgba(255,255,255,0.2); font-size: 0.68rem; letter-spacing: 0.08em;
+      text-transform: uppercase; text-align: center; padding: 1.5rem;
+      line-height: 1.7;
+    }
+    .phone-screen-placeholder svg { opacity: 0.2; margin-bottom: 0.2rem; }
 
     /* Card hover: "Ver Preview" button triggers phone */
     .card-preview-btn { cursor: pointer !important; }
@@ -175,14 +216,13 @@
       text-align: center; max-width: 280px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    #phoneCanvasMobile {
-      width: 300px !important; height: 460px !important;
-      border-radius: 16px; cursor: grab;
-      touch-action: none;
+    #phoneMockupMobile {
+      width: 240px; height: 480px;
     }
-    #phoneCanvasMobile:active { cursor: grabbing; }
+    #phoneMockupMobile .phone-mockup-wrap { width: 240px; height: 480px; }
+    #phoneMockupMobile .phone-screen-area { top: 11px; left: 11px; right: 11px; bottom: 11px; border-radius: 27px; }
     .phone-modal-zoom {
-      display: flex; align-items: center; gap: 0.5rem;
+      display: none;
     }
     .phone-modal-hint {
       font-size: 0.7rem; color: var(--text-muted); text-align: center; line-height: 1.5;
@@ -546,29 +586,91 @@
   <div class="phone-modal-overlay" id="phoneMobileOverlay" onclick="if(event.target===this)closeMobilePhoneModal()">
     <div class="phone-modal">
       <button class="phone-modal-close" onclick="closeMobilePhoneModal()">✕</button>
-      <span class="phone-modal-title">Visualização do App</span>
+      <span class="phone-modal-title">Visualização do Modelo</span>
       <div class="phone-modal-label" id="phoneMobileLabel">Carregando...</div>
-      <canvas id="phoneCanvasMobile"></canvas>
-      <div class="phone-modal-zoom">
-        <button class="zoom-btn" id="zoomOutMobile" title="Zoom out">−</button>
-        <span class="zoom-label">ZOOM</span>
-        <button class="zoom-btn" id="zoomInMobile" title="Zoom in">+</button>
+      <div id="phoneMockupMobile">
+        <div class="phone-mockup-wrap">
+          <div class="phone-screen-area" id="phoneScreenMobile">
+            <div class="phone-screen-placeholder" id="phonePlaceholderMobile">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              Carregando preview...
+            </div>
+            <img id="phoneImgMobile" src="" alt="Preview" onload="this.classList.add('loaded')">
+          </div>
+          <svg class="phone-mockup-frame phone-mockup-overlay" viewBox="0 0 280 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bodyGradM" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2e2e40"/>
+                <stop offset="100%" stop-color="#0e0e18"/>
+              </linearGradient>
+            </defs>
+            <path d="
+              M42,0 H238 Q280,0 280,42 V518 Q280,560 238,560 H42 Q0,560 0,518 V42 Q0,0 42,0 Z
+              M30,32 Q14,32 14,48 V512 Q14,528 30,528 H250 Q266,528 266,512 V48 Q266,32 250,32 Z
+            " fill="url(#bodyGradM)" fill-rule="evenodd"/>
+            <path d="M42,1 H238 Q279,1 279,42 V518 Q279,559 238,559 H42 Q1,559 1,518 V42 Q1,1 42,1 Z" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <rect x="-2" y="148" width="5" height="36" rx="2.5" fill="#1e1e2e"/>
+            <rect x="-2" y="194" width="5" height="58" rx="2.5" fill="#1e1e2e"/>
+            <rect x="277" y="170" width="5" height="68" rx="2.5" fill="#1e1e2e"/>
+            <rect x="96" y="16" width="88" height="30" rx="15" fill="#070710"/>
+            <circle cx="166" cy="31" r="6" fill="#0f0f1a"/>
+            <circle cx="166" cy="31" r="3.5" fill="#050510"/>
+            <circle cx="164" cy="29" r="1" fill="rgba(255,255,255,0.12)"/>
+            <rect x="96" y="537" width="88" height="6" rx="3" fill="rgba(255,255,255,0.18)"/>
+          </svg>
+        </div>
       </div>
-      <p class="phone-modal-hint">Arraste para inclinar o celular 3D</p>
+      <p class="phone-modal-hint">Toque fora para fechar</p>
     </div>
   </div>
 
-  <!-- ===== PHONE 3D MOCKUP ===== -->
+  <!-- ===== PHONE 2D MOCKUP (Desktop Panel) ===== -->
   <aside class="phone-panel" id="phonePanel">
-    <span class="phone-panel-label">Visualização do App</span>
+    <span class="phone-panel-label">Visualização do Modelo</span>
     <div class="phone-active-label hidden" id="phoneActiveLabel">Passe o mouse em um modelo</div>
-    <canvas id="phoneCanvas"></canvas>
-    <div class="phone-zoom-controls">
-      <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
-      <span class="zoom-label">ZOOM</span>
-      <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+    <div class="phone-mockup-wrap" id="phoneMockupDesktop">
+      <!-- Screen image BEHIND the SVG frame -->
+      <div class="phone-screen-area" id="phoneScreenDesktop">
+        <div class="phone-screen-placeholder" id="phonePlaceholderDesktop">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Clique em "Ver Preview"<br>para carregar o modelo
+        </div>
+        <img id="phoneImgDesktop" src="" alt="Preview" onload="this.classList.add('loaded')">
+      </div>
+      <!-- SVG frame ON TOP so notch, borders, home bar overlay the image -->
+      <svg class="phone-mockup-frame phone-mockup-overlay" viewBox="0 0 280 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2e2e40"/>
+            <stop offset="100%" stop-color="#0e0e18"/>
+          </linearGradient>
+        </defs>
+        <!-- Phone body (with transparent screen hole) -->
+        <!-- Outer body shape via clip: draw body rect then cut out screen -->
+        <path d="
+          M42,0 H238 Q280,0 280,42 V518 Q280,560 238,560 H42 Q0,560 0,518 V42 Q0,0 42,0 Z
+          M30,32 Q14,32 14,48 V512 Q14,528 30,528 H250 Q266,528 266,512 V48 Q266,32 250,32 Z
+        " fill="url(#bodyGrad)" fill-rule="evenodd"/>
+        <!-- Border highlight (top-left) -->
+        <path d="M42,1 H238 Q279,1 279,42 V518 Q279,559 238,559 H42 Q1,559 1,518 V42 Q1,1 42,1 Z" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <!-- Left volume buttons -->
+        <rect x="-2" y="148" width="5" height="36" rx="2.5" fill="#1e1e2e"/>
+        <rect x="-2" y="194" width="5" height="58" rx="2.5" fill="#1e1e2e"/>
+        <!-- Right power button -->
+        <rect x="277" y="170" width="5" height="68" rx="2.5" fill="#1e1e2e"/>
+        <!-- Dynamic Island notch -->
+        <rect x="96" y="16" width="88" height="30" rx="15" fill="#070710"/>
+        <!-- Camera lens -->
+        <circle cx="166" cy="31" r="6" fill="#0f0f1a"/>
+        <circle cx="166" cy="31" r="3.5" fill="#050510"/>
+        <circle cx="164" cy="29" r="1" fill="rgba(255,255,255,0.12)"/>
+        <!-- Home indicator bar -->
+        <rect x="96" y="537" width="88" height="6" rx="3" fill="rgba(255,255,255,0.18)"/>
+        <!-- Screen edge inner glow -->
+        <rect x="14" y="32" width="252" height="494" rx="18" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      </svg>
     </div>
-    <p class="phone-panel-hint">Arraste para inclinar · Clique "Ver Preview" para carregar</p>
+    <p class="phone-panel-hint">Clique "Ver Preview" em qualquer card para carregar</p>
   </aside>
 
   </div><!-- /catalog-layout -->
@@ -743,972 +845,71 @@
   });
 </script>
 
-<!-- ===== THREE.JS PHONE MOCKUP - v4-POLYFILL ===== -->
-<script>console.log('%c✅ FireCoding v4-POLYFILL carregado', 'background:#FF5E1A;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold');</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- ===== 2D PHONE MOCKUP ===== -->
 <script>
-(function() {
-  const canvas = document.getElementById('phoneCanvas');
-  const panel  = document.getElementById('phonePanel');
-  if (!canvas) return;
+(function () {
+  'use strict';
 
-  const W = 340, H = 520;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(W, H);
-  renderer.shadowMap.enabled = true;
+  function isMobile() { return window.innerWidth <= 1100; }
 
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
-  camera.position.set(0, 0, 5.5);
-
-  // Lighting
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-  const key = new THREE.DirectionalLight(0xffffff, 1.2);
-  key.position.set(3, 5, 4); scene.add(key);
-  const fill = new THREE.DirectionalLight(0xFF5E1A, 0.4);
-  fill.position.set(-3, -2, 2); scene.add(fill);
-  const rim = new THREE.DirectionalLight(0x4488ff, 0.3);
-  rim.position.set(0, -4, -3); scene.add(rim);
-
-  // Phone group
-  const phone = new THREE.Group();
-  scene.add(phone);
-
-  // Body
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111118, metalness: 0.85, roughness: 0.15 });
-  phone.add(new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.6, 0.18), bodyMat));
-
-  // Bezel
-  const bezel = new THREE.Mesh(
-    new THREE.BoxGeometry(1.62, 3.35, 0.01),
-    new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.4 })
-  );
-  bezel.position.z = 0.096;
-  phone.add(bezel);
-
-  // Screen canvas texture
-  const screenCanvas = document.createElement('canvas');
-  screenCanvas.width = 400; screenCanvas.height = 800;
-  const ctx = screenCanvas.getContext('2d');
-
-  // ── POLYFILL: roundRect para todos os browsers ────────────────────────────
-  function rr(x, y, w, h, r) {
-    r = Math.min(r, w/2, h/2);
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
-
-  // ── HELPERS ──────────────────────────────────────────────────────────────
-  function statusBar(dark) {
-    ctx.fillStyle = dark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.3)';
-    ctx.fillRect(0, 0, 400, 40);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px Arial, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('9:41', 16, 26);
-    // signal bars
-    [0,3,6].forEach((o,i) => {
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fillRect(328+o*5, 20-(i*3), 3, 8+i*3);
-    });
-    // battery
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
-    ctx.strokeRect(370, 16, 20, 11);
-    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(372, 18, 13, 7);
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(390, 19, 2, 5);
-  }
-
-  function pill(text, x, y, ac) {
-    ctx.font = 'bold 9px Arial, sans-serif';
-    const w = ctx.measureText(text).width + 14;
-    ctx.fillStyle = ac;
-    rr(x, y, w, 18, 9); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
-    ctx.fillText(text, x + 7, y + 13);
-  }
-
-  function avatar(x, y, r, initials, ac) {
-    ctx.fillStyle = ac;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.floor(r*0.8) + 'px Arial';
-    ctx.textAlign = 'center'; ctx.fillText(initials, x, y + r*0.32);
-  }
-
-  function miniChart(x, y, w, h, ac, points) {
-    const pts = points || [30,55,40,70,50,65,80,60,90,75,85];
-    ctx.strokeStyle = ac; ctx.lineWidth = 2;
-    ctx.beginPath();
-    pts.forEach((v,i) => {
-      const px = x + (i/(pts.length-1))*w;
-      const py = y + h - (v/100)*h;
-      i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
-    });
-    ctx.stroke();
-    const grad = ctx.createLinearGradient(0, y, 0, y+h);
-    grad.addColorStop(0, ac+'44'); grad.addColorStop(1, ac+'00');
-    ctx.fillStyle = grad;
-    ctx.lineTo(x+w, y+h); ctx.lineTo(x, y+h); ctx.fill();
-  }
-
-  function bottomBar(items, accentIdx, ac, bgColor) {
-    const barY = 740;
-    ctx.fillStyle = bgColor || '#111116';
-    ctx.fillRect(0, barY, 400, 60);
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, barY); ctx.lineTo(400, barY); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    rr(160, 789, 80, 4, 2); ctx.fill();
-    items.forEach((item, i) => {
-      const ix = 40 + i * (320/(items.length-1));
-      ctx.fillStyle = i === accentIdx ? ac : 'rgba(255,255,255,0.3)';
-      ctx.font = '13px Arial';
-      ctx.textAlign = 'center'; ctx.fillText(item.icon, ix, barY + 22);
-      ctx.font = (i === accentIdx ? 'bold ' : '') + '9px Arial';
-      ctx.fillText(item.label, ix, barY + 36);
-    });
-  }
-
-  // ── CATEGORY-SPECIFIC APP SCREENS ────────────────────────────────────────
-  const APP_SCREENS = {
-
-    negocio: (ac) => {
-      ctx.fillStyle = '#0e0e16'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      ctx.fillStyle = '#1a1a26'; ctx.fillRect(0,40,400,56);
-      avatar(34, 68, 16, 'FC', ac);
-      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='left';
-      ctx.fillText('Agência Digital', 58, 64);
-      ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='10px Arial';
-      ctx.fillText('Dashboard — 2025', 58, 80);
-
-      const kpis=[{l:'Leads',v:'1.284',d:'+12%'},{l:'Conversão',v:'8,4%',d:'+2%'},{l:'Receita',v:'R$48k',d:'+18%'}];
-      kpis.forEach((k,i)=>{
-        const kx=12+i*130, ky=108;
-        ctx.fillStyle='#1e1e2e'; rr(kx,ky,120,68,8); ctx.fill();
-        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px Arial'; ctx.textAlign='left';
-        ctx.fillText(k.l, kx+8, ky+16);
-        ctx.fillStyle='#fff'; ctx.font='bold 17px Arial'; ctx.fillText(k.v, kx+8, ky+38);
-        ctx.fillStyle=ac; ctx.font='bold 9px Arial'; ctx.fillText(k.d, kx+8, ky+56);
-      });
-
-      ctx.fillStyle='#1a1a28'; rr(12,190,376,130,10); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left';
-      ctx.fillText('Performance Mensal', 26, 210);
-      miniChart(20,220,360,88,ac,[20,35,30,55,48,65,58,72,68,80,75,88]);
-
-      const leads=[{n:'Marcos Silva',s:'Landing Page',t:'2min'},{n:'Ana Costa',s:'Google Ads',t:'15min'},{n:'Pedro Lima',s:'Indicação',t:'1h'}];
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left';
-      ctx.fillText('Últimos Leads', 16, 345);
-      leads.forEach((l,i)=>{
-        const ly=358+i*66;
-        ctx.fillStyle='#1e1e2e'; rr(12,ly,376,58,8); ctx.fill();
-        avatar(36, ly+28, 14, l.n[0], ac);
-        ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText(l.n, 58, ly+24);
-        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px Arial'; ctx.fillText(l.s+' • '+l.t+' atrás', 58, ly+40);
-        ctx.fillStyle=ac; rr(310,ly+16,60,24,12); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('Contatar',340,ly+31);
-      });
-
-      bottomBar([{icon:'🏠',label:'Início'},{icon:'👥',label:'Leads'},{icon:'📊',label:'Métricas'},{icon:'⚙',label:'Config'}],0,ac,'#0e0e16');
-    },
-
-    saude: (ac) => {
-      ctx.fillStyle = '#0a1410'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      ctx.fillStyle='#0f1f18'; ctx.fillRect(0,40,400,56);
-      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='left'; ctx.fillText('Clínica & Saúde',16,65);
-      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px Arial'; ctx.fillText('Seu painel de saúde',16,82);
-      ctx.fillStyle=ac; ctx.beginPath(); ctx.arc(375,68,18,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.fillText('📅',375,73);
-
-      ctx.fillStyle=ac+'22'; rr(12,108,376,90,12); ctx.fill();
-      ctx.strokeStyle=ac+'44'; ctx.lineWidth=1; rr(12,108,376,90,12); ctx.stroke();
-      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='left'; ctx.fillText('Próxima Consulta',26,130);
-      ctx.fillStyle='rgba(255,255,255,0.6)'; ctx.font='10px Arial'; ctx.fillText('Dr. Carlos Mendes — Cardiologista',26,148);
-      ctx.fillStyle=ac; ctx.font='bold 11px Arial'; ctx.fillText('📅 Hoje, 15:30 • Sala 04',26,168);
-      ctx.fillStyle=ac; rr(300,120,76,32,8); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('Check-in',338,139);
-
-      const vitals=[{l:'Pressão',v:'120/80',u:'mmHg',i:'❤'},{l:'Peso',v:'72,5',u:'kg',i:'⚖'},{l:'IMC',v:'23,4',u:'normal',i:'📊'}];
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Indicadores',16,222);
-      vitals.forEach((v,i)=>{
-        const vx=12+i*130;
-        ctx.fillStyle='#1a2a22'; rr(vx,232,120,88,10); ctx.fill();
-        ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText(v.i,vx+60,262);
-        ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px Arial'; ctx.fillText(v.l,vx+60,280);
-        ctx.fillStyle='#fff'; ctx.font='bold 14px Arial'; ctx.fillText(v.v,vx+60,300);
-        ctx.fillStyle=ac; ctx.font='9px Arial'; ctx.fillText(v.u,vx+60,314);
-      });
-
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Histórico de Consultas',16,346);
-      const hist=[{d:'15 Mar',t:'Clínico Geral',r:'Saudável'},{ d:'02 Fev',t:'Cardiologista',r:'Acompanhar'},{d:'20 Jan',t:'Dermatologia',r:'Tratamento'}];
-      hist.forEach((h,i)=>{
-        const hy=358+i*70;
-        ctx.fillStyle='#111e18'; rr(12,hy,376,62,8); ctx.fill();
-        ctx.fillStyle=ac+'33'; rr(12,hy,4,62,2); ctx.fill();
-        ctx.fillStyle=ac; ctx.font='bold 9px Arial'; ctx.textAlign='left'; ctx.fillText(h.d,24,hy+22);
-        ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.fillText(h.t,24,hy+38);
-        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px Arial'; ctx.fillText(h.r,24,hy+54);
-        ctx.fillStyle=ac; rr(310,hy+14,66,28,6); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('Ver mais',343,hy+31);
-      });
-
-      bottomBar([{icon:'🏠',label:'Início'},{icon:'📅',label:'Agenda'},{icon:'💊',label:'Saúde'},{icon:'👤',label:'Perfil'}],0,ac,'#0a1410');
-    },
-
-    tech: (ac) => {
-      ctx.fillStyle = '#080c14'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      ctx.fillStyle='#0d1220'; ctx.fillRect(0,40,400,56);
-      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='left'; ctx.fillText('SaaS Dashboard',16,65);
-      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px Arial'; ctx.fillText('Painel Principal • Plano Pro',16,82);
-
-      const metrics=[{l:'Usuários',v:'12.4k',d:'↑18%'},{l:'Uptime',v:'99.9%',d:'↑0.1%'},{l:'MRR',v:'$8.2k',d:'↑24%'}];
-      metrics.forEach((m,i)=>{
-        const mx=12+i*130, my=108;
-        ctx.fillStyle='#111825'; rr(mx,my,120,68,8); ctx.fill();
-        ctx.strokeStyle=ac+'33'; ctx.lineWidth=1; rr(mx,my,120,68,8); ctx.stroke();
-        ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px Arial'; ctx.textAlign='left';
-        ctx.fillText(m.l,mx+8,my+16);
-        ctx.fillStyle='#fff'; ctx.font='bold 18px Arial'; ctx.fillText(m.v,mx+8,my+40);
-        ctx.fillStyle=ac; ctx.font='bold 9px Arial'; ctx.fillText(m.d,mx+8,my+58);
-      });
-
-      ctx.fillStyle='#111825'; rr(12,190,376,140,10); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Crescimento de Usuários',26,210);
-      ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='9px Arial'; ctx.fillText('Últimos 12 meses',26,225);
-      miniChart(20,232,360,86,ac,[22,38,35,52,45,68,62,75,70,82,78,91]);
-
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Atividade Recente',16,356);
-      const acts=[{e:'🚀',t:'Deploy realizado','s':'v2.3.1 em produção','c':ac},{e:'⚠',t:'Alerta de uso','s':'95% do limite de API','c':'#ff9040'},{e:'✅',t:'Novo cliente','s':'Acme Corp — Plano Enterprise','c':'#40c090'},{e:'🔧',t:'Manutenção','s':'Banco de dados otimizado','c':'#9060ff'}];
-      acts.forEach((a,i)=>{
-        const ay=368+i*72;
-        ctx.fillStyle='#111825'; rr(12,ay,376,64,8); ctx.fill();
-        ctx.fillStyle=a.c+'33'; rr(12,ay,4,64,2); ctx.fill();
-        ctx.font='18px Arial'; ctx.textAlign='center'; ctx.fillText(a.e,36,ay+35);
-        ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText(a.t,56,ay+26);
-        ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='9px Arial'; ctx.fillText(a.s,56,ay+44);
-      });
-
-      bottomBar([{icon:'⊞',label:'Dashboard'},{icon:'📊',label:'Analytics'},{icon:'⚙',label:'Config'},{icon:'👤',label:'Conta'}],0,ac,'#080c14');
-    },
-
-    ecommerce: (ac) => {
-      ctx.fillStyle = '#0f0a0a'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      ctx.fillStyle='#1a1010'; ctx.fillRect(0,40,400,56);
-      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='left'; ctx.fillText('Minha Loja',16,65);
-      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px Arial'; ctx.fillText('3 itens no carrinho • R$ 1.280',16,82);
-      ctx.fillStyle=ac; ctx.font='18px Arial'; ctx.textAlign='right'; ctx.fillText('🛒',384,70);
-
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Destaques do Dia',16,114);
-      const prods=[{n:'Nike Air Force',p:'R$ 490',e:'👟',b:'Popular'},{n:'Relógio Pro',p:'R$ 890',e:'⌚',b:'Novo'},{n:'Fone BT Elite',p:'R$ 320',e:'🎧',b:''},{n:'Óculos Ray',p:'R$ 650',e:'🕶',b:'Off 20%'}];
-      prods.forEach((p,i)=>{
-        const col=i%2, row=Math.floor(i/2);
-        const px=12+col*196, py=124+row*186;
-        ctx.fillStyle='#1e1212'; rr(px,py,184,178,10); ctx.fill();
-        ctx.fillStyle='#2a1818'; rr(px+8,py+8,168,100,8); ctx.fill();
-        ctx.font='34px Arial'; ctx.textAlign='center'; ctx.fillText(p.e,px+92,py+65);
-        if(p.b){ pill(p.b,px+8,py+14,ac); }
-        ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px Arial'; ctx.textAlign='left'; ctx.fillText('Produto',px+8,py+120);
-        ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.fillText(p.n,px+8,py+136);
-        ctx.fillStyle=ac; ctx.font='bold 13px Arial'; ctx.fillText(p.p,px+8,py+154);
-        ctx.fillStyle=ac; rr(px+8,py+160,168,14,7); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font='bold 8px Arial'; ctx.textAlign='center'; ctx.fillText('Adicionar →',px+92,py+170);
-      });
-
-      bottomBar([{icon:'🏠',label:'Início'},{icon:'🔍',label:'Buscar'},{icon:'❤',label:'Favoritos'},{icon:'👤',label:'Conta'}],0,ac,'#0f0a0a');
-    },
-
-    evento: (ac) => {
-      ctx.fillStyle = '#08080f'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      // Banner do evento
-      const grad = ctx.createLinearGradient(0,40,0,200);
-      grad.addColorStop(0, ac+'cc'); grad.addColorStop(1, '#08080f');
-      ctx.fillStyle=grad; ctx.fillRect(0,40,400,180);
-      ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.arc(350,60,80,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.beginPath(); ctx.arc(50,160,60,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px Arial'; ctx.textAlign='left'; ctx.fillText('EVENTO PREMIUM 2025',20,60);
-      ctx.fillStyle='#fff'; ctx.font='bold 18px Arial'; ctx.fillText('Dev Summit',20,84);
-      ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='10px Arial'; ctx.fillText('25–26 Outubro • São Paulo, SP',20,100);
-      ctx.fillStyle=ac; rr(20,112,100,28,6); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('Inscrever-se',70,129);
-
-      // Countdown
-      ctx.fillStyle='#111'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Faltam para o evento:',16,246);
-      const cd=[{v:'42',l:'DIAS'},{v:'08',l:'HORAS'},{v:'33',l:'MIN'},{v:'17',l:'SEG'}];
-      cd.forEach((c,i)=>{
-        const cx=16+i*96;
-        ctx.fillStyle='#1a1a28'; rr(cx,256,82,62,8); ctx.fill();
-        ctx.strokeStyle=ac+'44'; ctx.lineWidth=1; rr(cx,256,82,62,8); ctx.stroke();
-        ctx.fillStyle=ac; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText(c.v,cx+41,286);
-        ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='7px Arial'; ctx.fillText(c.l,cx+41,302);
-      });
-
-      ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText('Speakers Confirmados',16,346);
-      const spk=[{n:'Ana Silva',r:'CTO @ TechBR',e:'👩‍💻'},{n:'Carlos M.',r:'DevRel @ Cloud',e:'👨‍🏫'},{n:'Bia Costa',r:'CEO @ StartupX',e:'👩‍💼'}];
-      spk.forEach((s,i)=>{
-        const sy=358+i*72;
-        ctx.fillStyle='#111120'; rr(12,sy,376,64,8); ctx.fill();
-        ctx.font='20px Arial'; ctx.textAlign='center'; ctx.fillText(s.e,36,sy+35);
-        ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText(s.n,60,sy+26);
-        ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='9px Arial'; ctx.fillText(s.r,60,sy+44);
-        ctx.fillStyle=ac+'22'; rr(300,sy+14,70,28,6); ctx.fill();
-        ctx.fillStyle=ac; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText('Ver palestra',335,sy+31);
-      });
-
-      bottomBar([{icon:'🏠',label:'Início'},{icon:'📅',label:'Agenda'},{icon:'🎙',label:'Speakers'},{icon:'🎟',label:'Ingresso'}],0,ac,'#08080f');
-    },
-
-    educacao: (ac) => {
-      ctx.fillStyle = '#f0f4ff'; ctx.fillRect(0,0,400,800);
-      ctx.fillStyle='rgba(0,0,0,0.04)'; ctx.fillRect(0,0,400,40);
-      ctx.fillStyle='#333'; ctx.font='bold 12px Arial'; ctx.textAlign='left'; ctx.fillText('9:41',16,26);
-
-      ctx.fillStyle=ac; ctx.fillRect(0,40,400,80);
-      ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.beginPath(); ctx.arc(360,50,50,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 14px Arial'; ctx.textAlign='left'; ctx.fillText('Meu Aprendizado',16,72);
-      ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='10px Arial'; ctx.fillText('Continuando de onde parou 📚',16,90);
-      avatar(372,80,18,'JS',ac+'bb');
-
-      // Streak
-      ctx.fillStyle='#fff'; rr(12,132,376,72,10); ctx.fill();
-      ctx.shadowColor='rgba(0,0,0,0.06)'; ctx.shadowBlur=8; ctx.fillStyle='#fff'; rr(12,132,376,72,10); ctx.fill(); ctx.shadowBlur=0;
-      ctx.fillStyle='#111'; ctx.font='bold 12px Arial'; ctx.textAlign='left'; ctx.fillText('🔥 Sequência de 12 dias!',24,158);
-      ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.font='10px Arial'; ctx.fillText('Continue para manter sua sequência',24,174);
-      ctx.fillStyle='rgba(0,0,0,0.08)'; rr(24,182,340,6,3); ctx.fill();
-      ctx.fillStyle=ac; rr(24,182,226,6,3); ctx.fill();
-
-      // Continue course
-      ctx.fillStyle='#333'; ctx.font='bold 12px Arial'; ctx.fillText('Continuar Estudando',16,228);
-      ctx.fillStyle='#fff'; rr(12,238,376,108,10); ctx.fill();
-      ctx.strokeStyle='rgba(0,0,0,0.05)'; ctx.lineWidth=1; rr(12,238,376,108,10); ctx.stroke();
-      ctx.fillStyle=ac+'22'; rr(12,238,78,108,10); ctx.fill();
-      ctx.font='28px Arial'; ctx.textAlign='center'; ctx.fillText('💡',52,298);
-      ctx.fillStyle='#111'; ctx.font='bold 12px Arial'; ctx.textAlign='left'; ctx.fillText('Landing Pages que Vendem',98,266);
-      ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.font='9px Arial'; ctx.fillText('Aula 7 de 14 • Tailwind CSS',98,282);
-      ctx.fillStyle='rgba(0,0,0,0.06)'; rr(98,294,268,5,2); ctx.fill();
-      ctx.fillStyle=ac; rr(98,294,134,5,2); ctx.fill();
-      ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font='9px Arial'; ctx.fillText('50% concluído',98,312);
-      ctx.fillStyle=ac; rr(308,328,58,24,12); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.fillText('▶ Ir',337,343);
-
-      // Courses
-      ctx.fillStyle='#333'; ctx.font='bold 12px Arial'; ctx.textAlign='left'; ctx.fillText('Recomendados',16,374);
-      const cs=[{t:'SEO e Google Ads',s:'8h · Avançado',e:'📈'},{t:'E-mail Marketing',s:'5h · Iniciante',e:'📧'},{t:'Copywriting Pro',s:'6h · Intermediário',e:'✍'}];
-      cs.forEach((c,i)=>{
-        const cy=384+i*80;
-        ctx.fillStyle='#fff'; rr(12,cy,376,72,8); ctx.fill();
-        ctx.strokeStyle='rgba(0,0,0,0.04)'; ctx.lineWidth=1; rr(12,cy,376,72,8); ctx.stroke();
-        ctx.fillStyle=ac+'22'; rr(12,cy,58,72,8); ctx.fill();
-        ctx.font='20px Arial'; ctx.textAlign='center'; ctx.fillText(c.e,42,cy+40);
-        ctx.fillStyle='#111'; ctx.font='bold 11px Arial'; ctx.textAlign='left'; ctx.fillText(c.t,80,cy+28);
-        ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.font='9px Arial'; ctx.fillText(c.s,80,cy+46);
-        ctx.fillStyle=ac; ctx.font='bold 9px Arial'; ctx.textAlign='right'; ctx.fillText('Iniciar →',380,cy+36);
-      });
-
-      bottomBar([{icon:'🏠',label:'Início'},{icon:'📚',label:'Cursos'},{icon:'🏆',label:'Conquistas'},{icon:'👤',label:'Perfil'}],0,ac,'#e8ecf8');
-    },
-
-    todos: (ac) => {
-      ctx.fillStyle='#0a0a12'; ctx.fillRect(0,0,400,800);
-      statusBar(true);
-      ctx.fillStyle='#141420'; ctx.fillRect(0,40,400,56);
-      ctx.fillStyle='#fff'; ctx.font='bold 15px Arial'; ctx.textAlign='left'; ctx.fillText('FireCoding',16,72);
-      ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='10px Arial'; ctx.fillText('Catálogo de Modelos',16,90);
-      pill('12 modelos',264,55,ac);
-
-      // Search
-      ctx.fillStyle='#1e1e2e'; rr(12,108,376,38,8); ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='12px Arial'; ctx.textAlign='left'; ctx.fillText('🔍  Buscar modelo...',28,131);
-
-      // Chips
-      const chips=['Todos','Negócios','Saúde','Tech','Shop'];
-      let chipX=12;
-      chips.forEach((c,i)=>{
-        ctx.font='9px Arial';
-        const cw=ctx.measureText(c).width+18;
-        ctx.fillStyle= i===0 ? ac : '#1e1e2e';
-        rr(chipX,158,cw,24,12); ctx.fill();
-        ctx.fillStyle= i===0 ? '#fff' : 'rgba(255,255,255,0.5)';
-        ctx.textAlign='center'; ctx.fillText(c,chipX+cw/2,174);
-        chipX += cw+6;
-      });
-
-      // Cards grid
-      const cards=[{t:'Agência Digital',p:'R$ 490',b:'Popular',e:'💼'},{t:'Clínica & Consultório',p:'R$ 390',b:'Novo',e:'🏥'},{t:'SaaS Launch Page',p:'R$ 690',b:'Premium',e:'🚀'},{t:'Loja Virtual',p:'R$ 490',b:'Popular',e:'🛍'}];
-      cards.forEach((card,i)=>{
-        const col=i%2, row=Math.floor(i/2);
-        const kx=12+col*194, ky=194+row*192;
-        ctx.fillStyle='#161622'; rr(kx,ky,182,184,10); ctx.fill();
-        ctx.fillStyle='#1e1e30'; rr(kx+6,ky+6,170,96,7); ctx.fill();
-        ctx.font='30px Arial'; ctx.textAlign='center'; ctx.fillText(card.e,kx+91,ky+62);
-        pill(card.b,kx+6,ky+10,ac);
-        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='8px Arial'; ctx.textAlign='left'; ctx.fillText('FireCoding',kx+8,ky+116);
-        ctx.fillStyle='#fff'; ctx.font='bold 10px Arial'; ctx.fillText(card.t,kx+8,ky+132);
-        ctx.fillStyle=ac; ctx.font='bold 11px Arial'; ctx.fillText(card.p,kx+8,ky+150);
-        ctx.fillStyle=ac+'33'; rr(kx+8,ky+158,166,18,9); ctx.fill();
-        ctx.fillStyle=ac; ctx.font='bold 8px Arial'; ctx.textAlign='center'; ctx.fillText('Contratar →',kx+91,ky+170);
-      });
-
-      bottomBar([{icon:'⊞',label:'Catálogo'},{icon:'⭐',label:'Favoritos'},{icon:'💬',label:'Contato'},{icon:'👤',label:'Perfil'}],0,ac,'#0a0a12');
-    },
-  };
-
-  // ── IDLE: draws the category-specific app screen ─────────────────────────
-  function drawIdleScreen(label, sub, accentColor) {
-    ctx.clearRect(0,0,400,800);
-    // find which key this label maps to
-    const catKey = Object.entries({
-      'Tech & SaaS':'tech','Negócios':'negocio','E-commerce':'ecommerce',
-      'Saúde & Bem-estar':'saude','Eventos':'evento','Educação':'educacao',
-    }).find(([k])=>label.includes(k));
-    const fn = catKey ? APP_SCREENS[catKey[1]] : APP_SCREENS.todos;
-    (fn || APP_SCREENS.todos)(accentColor);
-  }
-
-  // ── CARD PREVIEW: draws a rich app screen tailored to the card's category ─
-  function drawCardScreen(title, price, badge, accentColor, imgElement, cat) {
-    ctx.clearRect(0,0,400,800);
-    const fn = APP_SCREENS[cat] || APP_SCREENS.todos;
-    fn(accentColor);
-    // overlay: bottom sheet with card info on top of the app screen
-    const sheetY = 520;
-    // dim backdrop
-    const dimGrad = ctx.createLinearGradient(0, sheetY-100, 0, sheetY);
-    dimGrad.addColorStop(0,'transparent'); dimGrad.addColorStop(1,'rgba(0,0,0,0.9)');
-    ctx.fillStyle=dimGrad; ctx.fillRect(0,sheetY-100,400,100);
-    // sheet background
-    ctx.fillStyle='#1a1a26';
-    rr(0,sheetY,400,300,20); ctx.fill();
-    // drag handle
-    ctx.fillStyle='rgba(255,255,255,0.2)';
-    rr(170,sheetY+10,60,4,2); ctx.fill();
-    // title
-    ctx.fillStyle='#fff'; ctx.font='bold 15px Arial'; ctx.textAlign='left';
-    ctx.fillText(title, 20, sheetY+42);
-    if(badge){ pill(badge.toUpperCase(), 20, sheetY+52, accentColor); }
-    // price
-    ctx.fillStyle=accentColor; ctx.font='bold 22px Arial'; ctx.textAlign='right';
-    ctx.fillText(price, 380, sheetY+46);
-    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='9px Arial';
-    ctx.fillText('pagamento unico',380,sheetY+62);
-    // divider
-    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(20,sheetY+82); ctx.lineTo(380,sheetY+82); ctx.stroke();
-    // features
-    const feats=['✔ Responsivo & Mobile First','✔ SEO + Analytics incluidos','✔ Suporte 30 dias apos entrega'];
-    feats.forEach((f,i)=>{
-      ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='11px Arial'; ctx.textAlign='left';
-      ctx.fillText(f, 20, sheetY+102+i*22);
-    });
-    // CTA button
-    ctx.fillStyle=accentColor;
-    rr(20,sheetY+172,360,46,10); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold 13px Arial'; ctx.textAlign='center';
-    ctx.fillText('Contratar este modelo', 200, sheetY+200);
-    // WhatsApp outline button
-    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-    rr(20,sheetY+228,360,34,8); ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='11px Arial'; ctx.textAlign='center';
-    ctx.fillText('Falar pelo WhatsApp', 200, sheetY+249);
-  }
-
-  // Color map by category
-  const CAT_COLORS = {
-    tech: '#FF5E1A', negocio: '#FFA040', ecommerce: '#e53a1a',
-    saude: '#40c090', evento: '#9060ff', educacao: '#218fcf', todos: '#FF5E1A'
-  };
-
-  // Render initial idle screen
-  drawIdleScreen('Catálogo FireCoding', 'Escolha um modelo', '#FF5E1A');
-  // DEBUG: bright stripe to confirm canvas is being read by GPU
-  ctx.fillStyle = '#FF0000';
-  ctx.fillRect(0, 0, 400, 8);
-
-  const screenTex = new THREE.CanvasTexture(screenCanvas);
-  screenTex.needsUpdate = true; // force upload after initial draw
-  const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
-  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
-  // Ensure texture is properly flagged
-  screenTex.flipY = false;
-  screenTex.generateMipmaps = false;
-  screenTex.minFilter = THREE.LinearFilter;
-  screenTex.magFilter = THREE.LinearFilter;
-  screenTex.needsUpdate = true;
-  const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-  screenMesh.position.z = 0.098;
-  phone.add(screenMesh);
-
-  // Notch
-  const notch = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.12, 0.12, 0.42, 24),
-    new THREE.MeshStandardMaterial({ color: 0x0a0a10 })
-  );
-  notch.rotation.z = Math.PI / 2; notch.position.set(0, 1.62, 0.1);
-  phone.add(notch);
-
-  // Side buttons
-  const btnMat = new THREE.MeshStandardMaterial({ color: 0x1a1a25, metalness: 0.9, roughness: 0.1 });
-  [-0.7, -1.1].forEach(y => {
-    const b = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.36, 0.14), btnMat);
-    b.position.set(-0.93, y, 0); phone.add(b);
-  });
-  const pb = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.14), btnMat);
-  pb.position.set(0.93, -0.5, 0); phone.add(pb);
-
-  // Camera lens
-  const lensRing = new THREE.Mesh(
-    new THREE.TorusGeometry(0.16, 0.04, 16, 32),
-    new THREE.MeshStandardMaterial({ color: 0x222230, metalness: 1, roughness: 0.1 })
-  );
-  lensRing.position.set(-0.4, 1.35, -0.1); phone.add(lensRing);
-  const lensCover = new THREE.Mesh(
-    new THREE.CircleGeometry(0.13, 32),
-    new THREE.MeshStandardMaterial({ color: 0x050508, metalness: 0.5, roughness: 0.1 })
-  );
-  lensCover.position.set(-0.4, 1.35, -0.08); phone.add(lensCover);
-
-  // Initial subtle tilt — no auto-rotation
-  phone.rotation.x = 0.10;
-  phone.rotation.y = -0.20;
-
-  // --- DRAG to tilt (no rotation, just tilt within limits) ---
-  let isDragging = false, lastX = 0, lastY = 0;
-  let velX = 0, velY = 0;
-  // Target tilt (smooth interpolation target)
-  let targetRX = 0.10, targetRY = -0.20;
-  const MAX_TILT = 0.55;
-
-  canvas.addEventListener('mousedown', e => {
-    isDragging = true; lastX = e.clientX; lastY = e.clientY; velX = 0; velY = 0;
-  });
-  window.addEventListener('mouseup', () => { isDragging = false; });
-  window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    const dx = e.clientX - lastX, dy = e.clientY - lastY;
-    velX = dy * 0.007; velY = dx * 0.007;
-    targetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRX + velX));
-    targetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRY + velY));
-    lastX = e.clientX; lastY = e.clientY;
-  });
-
-  // Touch drag
-  canvas.addEventListener('touchstart', e => {
-    isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; velX = 0; velY = 0;
-  });
-  canvas.addEventListener('touchend', () => { isDragging = false; });
-  canvas.addEventListener('touchmove', e => {
-    if (!isDragging) return;
-    const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
-    velX = dy * 0.007; velY = dx * 0.007;
-    targetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRX + velX));
-    targetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, targetRY + velY));
-    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-  }, { passive: true });
-
-  // --- ZOOM via buttons (no scroll zoom) ---
-  const zoomIn  = document.getElementById('zoomIn');
-  const zoomOut = document.getElementById('zoomOut');
-  const ZOOM_MIN = 3.5, ZOOM_MAX = 8.5, ZOOM_STEP = 0.5;
-  let targetZ = camera.position.z;
-  if (zoomIn)  zoomIn.addEventListener('click',  () => { targetZ = Math.max(ZOOM_MIN, targetZ - ZOOM_STEP); });
-  if (zoomOut) zoomOut.addEventListener('click', () => { targetZ = Math.min(ZOOM_MAX, targetZ + ZOOM_STEP); });
-
-  // --- LOAD CARD IMAGE on "Ver Preview" click ---
-  // NOTE: We do NOT draw external images directly on the canvas to avoid CORS taint
-  // (tainted canvas = Three.js cannot read the texture = black screen)
-  // Instead we draw everything with Canvas 2D API only.
-  window.loadPhonePreview = function(event, btn) {
+  // ── DESKTOP: load image into phone mockup ──────────────────────────────────
+  window.loadPhonePreview = function (event, btn) {
     event.preventDefault();
-    const title  = btn.getAttribute('data-title')  || 'Modelo';
-    const cat    = btn.getAttribute('data-cat')    || 'todos';
-    const price  = btn.getAttribute('data-price')  || '';
-    const badge  = btn.getAttribute('data-badge')  || '';
-    const color  = CAT_COLORS[cat] || '#FF5E1A';
+    const title  = btn.getAttribute('data-title') || 'Modelo';
+    const imgSrc = btn.getAttribute('data-img')   || '';
 
-    // Update active label
+    if (isMobile()) {
+      const price = btn.getAttribute('data-price') || '';
+      const badge = btn.getAttribute('data-badge') || '';
+      const cat   = btn.getAttribute('data-cat')   || '';
+      window.openMobilePhoneModal(title, price, badge, cat, imgSrc);
+      return;
+    }
+
+    // Show panel
+    const panel = document.getElementById('phonePanel');
+    if (panel) panel.classList.add('visible');
+
+    // Update label
     const lbl = document.getElementById('phoneActiveLabel');
     if (lbl) { lbl.textContent = '📱 ' + title; lbl.classList.remove('hidden'); }
 
-    // Draw without image (no CORS risk)
-    drawCardScreen(title, price, badge, color, null, cat);
-    screenTex.needsUpdate = true;
-
-    // Gentle "snap back to front" on preview load
-    targetRX = 0.08; targetRY = -0.12;
+    // Load image
+    const img = document.getElementById('phoneImgDesktop');
+    const placeholder = document.getElementById('phonePlaceholderDesktop');
+    if (img) {
+      img.classList.remove('loaded');
+      img.src = imgSrc;
+      if (placeholder) placeholder.style.display = 'none';
+    }
   };
 
-  // --- FILTER change still updates idle screen ---
-  window.updatePhoneScreen = function(cat) {
-    const cfg = {
-      tech:      { label: 'Tech & SaaS',       sub: 'Apps e Software' },
-      negocio:   { label: 'Negócios',           sub: 'Soluções B2B' },
-      ecommerce: { label: 'E-commerce',         sub: 'Lojas Virtuais' },
-      saude:     { label: 'Saúde & Bem-estar',  sub: 'Clínicas e Personal' },
-      evento:    { label: 'Eventos',            sub: 'Congressos e Lives' },
-      educacao:  { label: 'Educação',           sub: 'Cursos e E-books' },
-      todos:     { label: 'Catálogo FireCoding', sub: 'Escolha um modelo' },
-    };
-    const c   = cfg[cat] || cfg['todos'];
-    const col = CAT_COLORS[cat] || '#FF5E1A';
-    drawIdleScreen(c.label, c.sub, col);
-    screenTex.needsUpdate = true;
-    const lbl = document.getElementById('phoneActiveLabel');
-    if (lbl) lbl.classList.add('hidden');
-  };
-
-  // Always show panel
-  panel.classList.add('visible');
-
-  // Force texture refresh for first few frames to ensure initial draw shows
-  let _texForceFrames = 10;
-
-  // --- RENDER LOOP: smooth tilt + zoom, NO auto-rotation ---
-  function animate() {
-    requestAnimationFrame(animate);
-
-    if (_texForceFrames > 0) {
-      screenTex.needsUpdate = true;
-      _texForceFrames--;
-    }
-
-    // Smooth interpolate tilt
-    phone.rotation.x += (targetRX - phone.rotation.x) * 0.08;
-    phone.rotation.y += (targetRY - phone.rotation.y) * 0.08;
-
-    // Smooth zoom
-    camera.position.z += (targetZ - camera.position.z) * 0.1;
-
-    // Subtle idle float (position only, no rotation spin)
-    const t = Date.now() * 0.0008;
-    phone.position.y = Math.sin(t) * 0.04;
-
-    renderer.render(scene, camera);
-  }
-  animate();
-})();
-
-// ===== MOBILE PHONE 3D MODAL =====
-(function() {
-  const isMobile = () => window.innerWidth <= 1100;
-  let mobileInitialized = false;
-  let mobileScene, mobileCamera, mobileRenderer, mobilePhone, mobileScreenTex, mobileCTX;
-  let mobileScreenCanvas;
-  let mobileDragging = false, mLastX = 0, mLastY = 0;
-  let mTargetRX = 0.10, mTargetRY = -0.20, mTargetZ = 6;
-  let mCurrentTitle = '', mCurrentPrice = '', mCurrentBadge = '', mCurrentCat = 'todos', mCurrentColor = '#FF5E1A';
-  let _mTexFrames = 0;
-  const MAX_TILT = 0.55;
-
-  // Reuse the CAT_COLORS and APP_SCREENS from the main IIFE via a global bridge
-  // We re-declare a minimal version for the mobile modal
-  const M_CAT_COLORS = {
-    tech: '#FF5E1A', negocio: '#FFA040', ecommerce: '#e53a1a',
-    saude: '#40c090', evento: '#9060ff', educacao: '#218fcf', todos: '#FF5E1A'
-  };
-
-  function initMobileThree() {
-    if (mobileInitialized) return;
-    mobileInitialized = true;
-
-    const canvas = document.getElementById('phoneCanvasMobile');
-
-    // Screen canvas
-    mobileScreenCanvas = document.createElement('canvas');
-    mobileScreenCanvas.width = 400; mobileScreenCanvas.height = 800;
-    mobileCTX = mobileScreenCanvas.getContext('2d');
-
-    // Scene
-    mobileScene = new THREE.Scene();
-    mobileCamera = new THREE.PerspectiveCamera(45, 300/460, 0.1, 100);
-    mobileCamera.position.set(0, 0, 6);
-
-    mobileRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    mobileRenderer.setSize(300, 460);
-    mobileRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mobileRenderer.setClearColor(0x000000, 0);
-
-    // Lights
-    const al = new THREE.AmbientLight(0xffffff, 0.6);
-    mobileScene.add(al);
-    const dl = new THREE.DirectionalLight(0xffffff, 1.2);
-    dl.position.set(3, 5, 5);
-    mobileScene.add(dl);
-    const rl = new THREE.DirectionalLight(0xff5e1a, 0.4);
-    rl.position.set(-4, -2, 3);
-    mobileScene.add(rl);
-
-    // Phone body
-    mobilePhone = new THREE.Group();
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(1.75, 3.6, 0.18, 1, 1, 1),
-      new THREE.MeshStandardMaterial({ color: 0x12121a, metalness: 0.85, roughness: 0.12 })
-    );
-    mobilePhone.add(body);
-
-    // Bezel
-    const bezel = new THREE.Mesh(
-      new THREE.BoxGeometry(1.62, 3.35, 0.01),
-      new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.4 })
-    );
-    bezel.position.z = 0.096;
-    mobilePhone.add(bezel);
-
-    // Screen
-    mobileScreenTex = new THREE.CanvasTexture(mobileScreenCanvas);
-    mobileScreenTex.flipY = false;
-    mobileScreenTex.generateMipmaps = false;
-    mobileScreenTex.minFilter = THREE.LinearFilter;
-    mobileScreenTex.magFilter = THREE.LinearFilter;
-    const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
-    const screenMat = new THREE.MeshBasicMaterial({ map: mobileScreenTex });
-    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-    screenMesh.position.z = 0.098;
-    mobilePhone.add(screenMesh);
-
-    // Notch
-    const notch = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.12, 0.42, 24),
-      new THREE.MeshStandardMaterial({ color: 0x0a0a10 })
-    );
-    notch.rotation.z = Math.PI / 2; notch.position.set(0, 1.62, 0.1);
-    mobilePhone.add(notch);
-
-    // Buttons
-    const btnMat = new THREE.MeshStandardMaterial({ color: 0x1a1a25, metalness: 0.9, roughness: 0.1 });
-    [-0.7, -1.1].forEach(y => {
-      const b = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.36, 0.14), btnMat);
-      b.position.set(-0.93, y, 0); mobilePhone.add(b);
-    });
-
-    mobilePhone.rotation.x = 0.10;
-    mobilePhone.rotation.y = -0.20;
-    mobileScene.add(mobilePhone);
-
-    // Touch drag
-    canvas.addEventListener('touchstart', e => {
-      mobileDragging = true;
-      mLastX = e.touches[0].clientX; mLastY = e.touches[0].clientY;
-    }, { passive: true });
-    canvas.addEventListener('touchend', () => { mobileDragging = false; });
-    canvas.addEventListener('touchmove', e => {
-      if (!mobileDragging) return;
-      const dx = e.touches[0].clientX - mLastX, dy = e.touches[0].clientY - mLastY;
-      mTargetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, mTargetRX + dy * 0.007));
-      mTargetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, mTargetRY + dx * 0.007));
-      mLastX = e.touches[0].clientX; mLastY = e.touches[0].clientY;
-    }, { passive: true });
-
-    // Mouse drag
-    canvas.addEventListener('mousedown', e => {
-      mobileDragging = true; mLastX = e.clientX; mLastY = e.clientY;
-    });
-    window.addEventListener('mouseup', () => { mobileDragging = false; });
-    canvas.addEventListener('mousemove', e => {
-      if (!mobileDragging) return;
-      const dx = e.clientX - mLastX, dy = e.clientY - mLastY;
-      mTargetRX = Math.max(-MAX_TILT, Math.min(MAX_TILT, mTargetRX + dy * 0.007));
-      mTargetRY = Math.max(-MAX_TILT, Math.min(MAX_TILT, mTargetRY + dx * 0.007));
-      mLastX = e.clientX; mLastY = e.clientY;
-    });
-
-    // Zoom buttons
-    const zoomIn  = document.getElementById('zoomInMobile');
-    const zoomOut = document.getElementById('zoomOutMobile');
-    if (zoomIn)  zoomIn.addEventListener('click',  () => { mTargetZ = Math.max(3.5, mTargetZ - 0.5); });
-    if (zoomOut) zoomOut.addEventListener('click', () => { mTargetZ = Math.min(8.5, mTargetZ + 0.5); });
-
-    // Render loop
-    let _mTexFrames = 10;
-    function mAnimate() {
-      requestAnimationFrame(mAnimate);
-      if (_mTexFrames > 0) { mobileScreenTex.needsUpdate = true; _mTexFrames--; }
-      mobilePhone.rotation.x += (mTargetRX - mobilePhone.rotation.x) * 0.08;
-      mobilePhone.rotation.y += (mTargetRY - mobilePhone.rotation.y) * 0.08;
-      mobileCamera.position.z += (mTargetZ - mobileCamera.position.z) * 0.1;
-      const t = Date.now() * 0.0008;
-      mobilePhone.position.y = Math.sin(t) * 0.04;
-      mobileRenderer.render(mobileScene, mobileCamera);
-    }
-    mAnimate();
-  }
-
-  function mrr(c, x, y, w, h, r) {
-    r = Math.min(r, w/2, h/2);
-    c.beginPath();
-    c.moveTo(x+r, y);
-    c.lineTo(x+w-r, y); c.quadraticCurveTo(x+w, y, x+w, y+r);
-    c.lineTo(x+w, y+h-r); c.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-    c.lineTo(x+r, y+h); c.quadraticCurveTo(x, y+h, x, y+h-r);
-    c.lineTo(x, y+r); c.quadraticCurveTo(x, y, x+r, y);
-    c.closePath();
-  }
-
-  function drawMobileScreen(title, price, badge, accentColor, imgEl, cat) {
-    const c = mobileCTX;
-    c.clearRect(0, 0, 400, 800);
-
-    const bgs = { negocio:'#0e0e16', saude:'#0a1410', tech:'#0a0e16', ecommerce:'#110a0a', evento:'#0e0a18', educacao:'#0a0e18', todos:'#0a0a12' };
-    c.fillStyle = bgs[cat] || '#0a0a12';
-    c.fillRect(0, 0, 400, 800);
-
-    // Status bar
-    c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(0, 0, 400, 40);
-    c.fillStyle = '#fff'; c.font = 'bold 12px Arial'; c.textAlign = 'left'; c.fillText('9:41', 16, 26);
-    [0,3,6].forEach((o,i)=>{ c.fillStyle='rgba(255,255,255,0.8)'; c.fillRect(328+o*5, 20-(i*3), 3, 8+i*3); });
-    c.strokeStyle='rgba(255,255,255,0.5)'; c.lineWidth=1; c.strokeRect(370,16,20,11);
-    c.fillStyle='rgba(255,255,255,0.7)'; c.fillRect(372,18,13,7);
-
-    // Header
-    c.fillStyle = '#141420'; c.fillRect(0, 40, 400, 56);
-    c.fillStyle = accentColor; c.font = 'bold 13px Arial'; c.textAlign = 'left';
-    c.fillText('FireCoding', 16, 72);
-    c.fillStyle = 'rgba(255,255,255,0.4)'; c.font = '10px Arial';
-    c.fillText('Catalogo de Modelos', 16, 88);
-
-    // Category label (top right)
-    const catLabels = { negocio:'NEGOCIOS', saude:'SAUDE', tech:'TECH', ecommerce:'E-COMMERCE', evento:'EVENTOS', educacao:'EDUCACAO', todos:'CATALOGO' };
-    const catLbl = catLabels[cat] || 'CATALOGO';
-    c.font = 'bold 9px Arial';
-    const pw = c.measureText(catLbl).width + 14;
-    c.fillStyle = accentColor;
-    mrr(c, 400-pw-12, 56, pw, 20, 10); c.fill();
-    c.fillStyle = '#fff'; c.textAlign = 'right'; c.fillText(catLbl, 400-12-7, 69);
-
-    // App icon area
-    c.fillStyle = '#1a1a28'; c.fillRect(0, 96, 400, 200);
-    const emojis = { negocio:'B2B', saude:'MED', tech:'SaaS', ecommerce:'SHOP', evento:'EVENT', educacao:'EDU', todos:'FIRE' };
-    c.fillStyle = accentColor + '33';
-    c.fillRect(140, 130, 120, 120);
-    c.fillStyle = accentColor;
-    c.font = 'bold 28px Arial'; c.textAlign = 'center';
-    c.fillText(emojis[cat]||'FIRE', 200, 200);
-    c.fillStyle = 'rgba(255,255,255,0.15)'; c.font = '11px Arial';
-    c.fillText(title, 200, 228);
-
-    // Badge
-    if (badge) {
-      c.font = 'bold 9px Arial'; c.textAlign = 'left';
-      const bw = c.measureText(badge.toUpperCase()).width + 14;
-      c.fillStyle = accentColor;
-      mrr(c, 14, 104, bw, 20, 10); c.fill();
-      c.fillStyle = '#fff'; c.fillText(badge.toUpperCase(), 21, 117);
-    }
-
-    // Bottom sheet
-    const shY = 500;
-    const dimGrad = c.createLinearGradient(0, shY-80, 0, shY);
-    dimGrad.addColorStop(0, 'transparent'); dimGrad.addColorStop(1, 'rgba(0,0,0,0.9)');
-    c.fillStyle = dimGrad; c.fillRect(0, shY-80, 400, 80);
-
-    c.fillStyle = '#1a1a26';
-    mrr(c, 0, shY, 400, 300, 20); c.fill();
-
-    // handle
-    c.fillStyle = 'rgba(255,255,255,0.2)';
-    mrr(c, 170, shY+10, 60, 4, 2); c.fill();
-
-    // Title
-    c.fillStyle = '#fff'; c.font = 'bold 15px Arial'; c.textAlign = 'left';
-    c.fillText(title, 18, shY+40);
-
-    // Badge on sheet
-    if (badge) {
-      const bw2 = c.measureText(badge.toUpperCase()).width + 14;
-      c.fillStyle = accentColor;
-      c.font = 'bold 9px Arial';
-      mrr(c, 18, shY+50, bw2, 18, 9); c.fill();
-      c.fillStyle = '#fff'; c.fillText(badge.toUpperCase(), 25, shY+62);
-    }
-
-    // Price
-    c.fillStyle = accentColor; c.font = 'bold 22px Arial'; c.textAlign = 'right';
-    c.fillText(price, 382, shY+44);
-    c.fillStyle = 'rgba(255,255,255,0.3)'; c.font = '9px Arial';
-    c.fillText('pagamento unico', 382, shY+60);
-
-    // Divider
-    c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(18, shY+78); c.lineTo(382, shY+78); c.stroke();
-
-    // Features
-    ['Responsivo & Mobile First', 'SEO + Analytics incluidos', 'Suporte 30 dias apos entrega'].forEach((f, i) => {
-      c.fillStyle = 'rgba(255,255,255,0.6)'; c.font = '10px Arial'; c.textAlign = 'left';
-      c.fillText('+ ' + f, 18, shY+96+i*20);
-    });
-
-    // CTA
-    c.fillStyle = accentColor;
-    mrr(c, 18, shY+158, 364, 44, 10); c.fill();
-    c.fillStyle = '#fff'; c.font = 'bold 13px Arial'; c.textAlign = 'center';
-    c.fillText('Contratar este modelo', 200, shY+185);
-
-    // WA button
-    c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1;
-    mrr(c, 18, shY+212, 364, 34, 8); c.stroke();
-    c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px Arial';
-    c.fillText('Falar pelo WhatsApp', 200, shY+233);
-  }
-
-  // Open mobile modal
-  window.openMobilePhoneModal = function(title, price, badge, cat, imgSrc) {
-    mCurrentTitle = title; mCurrentPrice = price;
-    mCurrentBadge = badge; mCurrentCat = cat;
-    mCurrentColor = M_CAT_COLORS[cat] || '#FF5E1A';
-
+  // ── MOBILE MODAL ───────────────────────────────────────────────────────────
+  window.openMobilePhoneModal = function (title, price, badge, cat, imgSrc) {
     const overlay = document.getElementById('phoneMobileOverlay');
-    const lbl = document.getElementById('phoneMobileLabel');
+    const lbl     = document.getElementById('phoneMobileLabel');
     if (lbl) lbl.textContent = '📱 ' + title;
-    overlay.classList.add('open');
+    if (overlay) overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Init Three.js only once
-    initMobileThree();
-
-    // Reset tilt on each open
-    mTargetRX = 0.08; mTargetRY = -0.12;
-
-    // Draw screen now that mobileCTX is guaranteed ready
-    drawMobileScreen(title, price, badge, mCurrentColor, null, cat);
-    if (mobileScreenTex) {
-      mobileScreenTex.needsUpdate = true;
-      // Force re-upload for several frames
-      _mTexFrames = 10;
+    const img = document.getElementById('phoneImgMobile');
+    const placeholder = document.getElementById('phonePlaceholderMobile');
+    if (img) {
+      img.classList.remove('loaded');
+      img.src = imgSrc;
+      if (placeholder) placeholder.style.display = 'none';
     }
   };
 
-  window.closeMobilePhoneModal = function() {
-    document.getElementById('phoneMobileOverlay').classList.remove('open');
+  window.closeMobilePhoneModal = function () {
+    const overlay = document.getElementById('phoneMobileOverlay');
+    if (overlay) overlay.classList.remove('open');
     document.body.style.overflow = '';
   };
 
-  // Intercept loadPhonePreview on mobile to open modal instead
-  const _origLoad = window.loadPhonePreview;
-  window.loadPhonePreview = function(event, btn) {
-    event.preventDefault();
-    const title  = btn.getAttribute('data-title')  || 'Modelo';
-    const cat    = btn.getAttribute('data-cat')    || 'todos';
-    const price  = btn.getAttribute('data-price')  || '';
-    const badge  = btn.getAttribute('data-badge')  || '';
-    const imgSrc = btn.getAttribute('data-img')    || '';
+  // Keep updatePhoneScreen as no-op for filter compatibility
+  window.updatePhoneScreen = function () {};
 
-    if (isMobile()) {
-      window.openMobilePhoneModal(title, price, badge, cat, imgSrc);
-    } else {
-      _origLoad(event, btn);
-    }
-  };
 })();
 </script>
 </body>
