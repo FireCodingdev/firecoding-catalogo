@@ -478,6 +478,83 @@
     /* Loading spinner */
     .auth-loading { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* ---- CARD DETAIL MODAL ---- */
+    .card-detail-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9200;
+      background: rgba(0,0,0,0.88); backdrop-filter: blur(16px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .card-detail-overlay.open { display: flex; }
+    .card-detail-modal {
+      background: var(--dark-card); border: 1px solid var(--dark-border);
+      border-radius: 20px; width: 100%; max-width: 880px;
+      max-height: 92vh; overflow-y: auto; position: relative;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 60px rgba(255,94,26,0.1);
+      display: flex; flex-direction: column;
+    }
+    .card-detail-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 10;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--dark-surface); border: 1px solid var(--dark-border);
+      color: var(--text-muted); font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .card-detail-close:hover { border-color: var(--fire-orange); color: var(--fire-orange); }
+    .card-detail-gallery {
+      width: 100%; background: var(--dark-surface);
+      border-radius: 20px 20px 0 0; overflow: hidden; position: relative;
+    }
+    .card-detail-main-img {
+      width: 100%; height: 420px; object-fit: cover;
+      display: block; transition: opacity 0.3s;
+    }
+    .card-detail-thumbs {
+      display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+      background: rgba(0,0,0,0.4); overflow-x: auto;
+    }
+    .card-detail-thumbs::-webkit-scrollbar { height: 4px; }
+    .card-detail-thumbs::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 2px; }
+    .card-detail-thumb {
+      width: 72px; height: 52px; object-fit: cover; border-radius: 6px;
+      border: 2px solid transparent; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.2s, opacity 0.2s; opacity: 0.6;
+    }
+    .card-detail-thumb.active, .card-detail-thumb:hover { border-color: var(--fire-orange); opacity: 1; }
+    .card-detail-body { padding: 1.8rem 2rem 2rem; }
+    .card-detail-badge-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .card-detail-cat { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fire-orange); }
+    .card-detail-title { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.8rem; }
+    .card-detail-desc { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; font-weight: 300; margin-bottom: 1.2rem; }
+    .card-detail-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
+    .card-detail-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 1.2rem; border-top: 1px solid var(--dark-border);
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .card-detail-price { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+    .card-detail-price span { font-size: 0.85rem; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+    .card-detail-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--fire-orange); color: #fff;
+      padding: 0.75rem 1.8rem; border-radius: 8px; font-weight: 700;
+      font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 0 20px var(--glow-orange);
+    }
+    .card-detail-btn:hover { background: var(--fire-red); transform: translateY(-1px); box-shadow: 0 0 30px var(--glow-orange); }
+    .card-detail-no-img {
+      width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 0.85rem; flex-direction: column; gap: 0.5rem;
+    }
+    @media (max-width: 600px) {
+      .card-detail-main-img { height: 240px; }
+      .card-detail-body { padding: 1.2rem 1.2rem 1.5rem; }
+      .card-detail-title { font-size: 1.3rem; }
+    }
   </style>
 </head>
 <body>
@@ -1269,10 +1346,25 @@ async function loadCatalogCards(filterCat = 'todos') {
     const priceFormatted = priceNum
       ? `R$ ${priceNum.toLocaleString('pt-BR')} <span>/ único</span>`
       : '';
+    // Imagem de capa do card (images[] do catálogo)
     const imgSrc = card.cover_url || (Array.isArray(card.images) && card.images[0]) || '';
+    // Imagem do mockup/celular (mockup_images[])
+    const mockupSrc = (Array.isArray(card.mockup_images) && card.mockup_images[0]) || imgSrc;
+    // Todas as imagens do card para galeria
+    const allImages = Array.isArray(card.images) ? card.images.filter(Boolean) : (imgSrc ? [imgSrc] : []);
+    const imagesJson = JSON.stringify(allImages).replace(/"/g, '&quot;');
 
     return `
-      <div class="card reveal" data-cat="${card.category}">
+      <div class="card reveal" data-cat="${card.category}"
+        onclick="openCardDetail(event, this)"
+        data-card-title="${card.title.replace(/"/g,'&quot;')}"
+        data-card-cat="${catLabel}"
+        data-card-price="${priceNum}"
+        data-card-desc="${(card.description||'').replace(/"/g,'&quot;')}"
+        data-card-tags='${JSON.stringify(Array.isArray(card.tags)?card.tags:[])}'
+        data-card-badge="${card.badge||''}"
+        data-card-images="${imagesJson}"
+        style="cursor:pointer">
         <div class="card-preview">
           <img src="${imgSrc}" alt="${card.title}" loading="lazy"
             onerror="this.style.opacity='0.08'">
@@ -1283,7 +1375,7 @@ async function loadCatalogCards(filterCat = 'todos') {
               data-cat="${card.category}"
               data-price="R$ ${card.price || ''}"
               data-badge="${card.badge || ''}"
-              data-img="${imgSrc}"
+              data-img="${mockupSrc}"
               onclick="loadPhonePreview(event, this)">
               ${previewSVG}Ver Preview
             </a>
@@ -1296,7 +1388,7 @@ async function loadCatalogCards(filterCat = 'todos') {
           <div class="card-tags">${tagsHTML}</div>
           <div class="card-footer">
             <div class="price">${priceFormatted}</div>
-            <a href="#contato" class="card-action">Contratar →</a>
+            <a href="#contato" class="card-action" onclick="event.stopPropagation()">Contratar →</a>
           </div>
         </div>
       </div>`;
@@ -1354,6 +1446,123 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 });
 </script>
+
+<script>
+// =====================================================================
+// CARD DETAIL MODAL
+// =====================================================================
+window.openCardDetail = function(event, cardEl) {
+  // Não abre se clicou em botão de preview ou contratar
+  if (event.target.closest('.card-preview-btn') || event.target.closest('.card-action')) return;
+
+  const title   = cardEl.getAttribute('data-card-title') || '';
+  const cat     = cardEl.getAttribute('data-card-cat') || '';
+  const priceN  = parseInt(cardEl.getAttribute('data-card-price') || '0', 10);
+  const desc    = cardEl.getAttribute('data-card-desc') || '';
+  const badge   = cardEl.getAttribute('data-card-badge') || '';
+  let images = [];
+  try { images = JSON.parse(cardEl.getAttribute('data-card-images').replace(/&quot;/g, '"') || '[]'); } catch(e) {}
+  let tags = [];
+  try { tags = JSON.parse(cardEl.getAttribute('data-card-tags') || '[]'); } catch(e) {}
+
+  document.getElementById('cardDetailTitle').textContent = title;
+  document.getElementById('cardDetailCat').textContent = cat;
+  document.getElementById('cardDetailDesc').textContent = desc;
+
+  const badgeEl = document.getElementById('cardDetailBadgeEl');
+  if (badge) {
+    const cls = badge === 'popular' ? 'badge-popular' : badge === 'Premium' ? 'badge-premium' : 'badge-new';
+    badgeEl.innerHTML = `<span class="card-badge ${cls}" style="position:static;display:inline-block">${badge}</span>`;
+  } else {
+    badgeEl.innerHTML = '';
+  }
+
+  const priceEl = document.getElementById('cardDetailPrice');
+  priceEl.innerHTML = priceN ? `R$ ${priceN.toLocaleString('pt-BR')} <span>/ único</span>` : '';
+
+  const tagsEl = document.getElementById('cardDetailTags');
+  tagsEl.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+  const gallery = document.getElementById('cardDetailGallery');
+  const mainImg = document.getElementById('cardDetailMainImg');
+  const thumbsEl = document.getElementById('cardDetailThumbs');
+
+  const validImages = images.filter(Boolean);
+  if (validImages.length > 0) {
+    gallery.style.display = '';
+    mainImg.src = validImages[0];
+    mainImg.alt = title;
+    if (validImages.length > 1) {
+      thumbsEl.style.display = '';
+      thumbsEl.innerHTML = validImages.map((url, i) =>
+        `<img class="card-detail-thumb ${i===0?'active':''}" src="${url}" alt="Imagem ${i+1}"
+          onclick="selectDetailImg(this,'${url}')">`
+      ).join('');
+    } else {
+      thumbsEl.style.display = 'none';
+      thumbsEl.innerHTML = '';
+    }
+  } else {
+    gallery.style.display = 'none';
+  }
+
+  // Botão contratar com verificação de login
+  const btn = document.getElementById('cardDetailBtn');
+  btn.onclick = async function(e) {
+    e.preventDefault();
+    closeCardDetail();
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { openAuthModal(); return; }
+    const priceStr = priceN ? `R$ ${priceN.toLocaleString('pt-BR')}` : '';
+    const msg = encodeURIComponent(`Olá! Quero contratar: *${title}* (${priceStr}). E-mail: ${session.user.email}`);
+    window.open('https://wa.me/5574988482293?text=' + msg, '_blank');
+  };
+
+  document.getElementById('cardDetailOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.selectDetailImg = function(thumbEl, url) {
+  document.getElementById('cardDetailMainImg').src = url;
+  document.querySelectorAll('.card-detail-thumb').forEach(t => t.classList.remove('active'));
+  thumbEl.classList.add('active');
+};
+
+window.closeCardDetail = function() {
+  document.getElementById('cardDetailOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (typeof closeCardDetail === 'function') closeCardDetail();
+    if (typeof closeMobilePhoneModal === 'function') closeMobilePhoneModal();
+  }
+});
+</script>
+<div class="card-detail-overlay" id="cardDetailOverlay" onclick="if(event.target===this)closeCardDetail()">
+  <div class="card-detail-modal" id="cardDetailModal">
+    <button class="card-detail-close" onclick="closeCardDetail()">✕</button>
+    <div class="card-detail-gallery" id="cardDetailGallery">
+      <img class="card-detail-main-img" id="cardDetailMainImg" src="" alt="">
+      <div class="card-detail-thumbs" id="cardDetailThumbs"></div>
+    </div>
+    <div class="card-detail-body">
+      <div class="card-detail-badge-row">
+        <span class="card-detail-cat" id="cardDetailCat"></span>
+        <span id="cardDetailBadgeEl"></span>
+      </div>
+      <h2 class="card-detail-title" id="cardDetailTitle"></h2>
+      <p class="card-detail-desc" id="cardDetailDesc"></p>
+      <div class="card-detail-tags" id="cardDetailTags"></div>
+      <div class="card-detail-footer">
+        <div class="card-detail-price" id="cardDetailPrice"></div>
+        <a href="#contato" class="card-detail-btn" id="cardDetailBtn" onclick="closeCardDetail()">Contratar →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
