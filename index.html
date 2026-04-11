@@ -1234,6 +1234,7 @@
   drawIdleScreen('Catálogo FireCoding', 'Escolha um modelo', '#FF5E1A');
 
   const screenTex = new THREE.CanvasTexture(screenCanvas);
+  screenTex.needsUpdate = true; // force upload after initial draw
   const screenGeo = new THREE.BoxGeometry(1.52, 3.20, 0.005);
   const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
   const screenMesh = new THREE.Mesh(screenGeo, screenMat);
@@ -1361,9 +1362,17 @@
   // Always show panel
   panel.classList.add('visible');
 
+  // Force texture refresh for first few frames to ensure initial draw shows
+  let _texForceFrames = 10;
+
   // --- RENDER LOOP: smooth tilt + zoom, NO auto-rotation ---
   function animate() {
     requestAnimationFrame(animate);
+
+    if (_texForceFrames > 0) {
+      screenTex.needsUpdate = true;
+      _texForceFrames--;
+    }
 
     // Smooth interpolate tilt
     phone.rotation.x += (targetRX - phone.rotation.x) * 0.08;
@@ -1390,6 +1399,7 @@
   let mobileDragging = false, mLastX = 0, mLastY = 0;
   let mTargetRX = 0.10, mTargetRY = -0.20, mTargetZ = 6;
   let mCurrentTitle = '', mCurrentPrice = '', mCurrentBadge = '', mCurrentCat = 'todos', mCurrentColor = '#FF5E1A';
+  let _mTexFrames = 0;
   const MAX_TILT = 0.55;
 
   // Reuse the CAT_COLORS and APP_SCREENS from the main IIFE via a global bridge
@@ -1473,10 +1483,6 @@
     mobilePhone.rotation.y = -0.20;
     mobileScene.add(mobilePhone);
 
-    // Draw initial screen
-    drawMobileScreen(mCurrentTitle, mCurrentPrice, mCurrentBadge, mCurrentColor, null, mCurrentCat);
-    mobileScreenTex.needsUpdate = true;
-
     // Touch drag
     canvas.addEventListener('touchstart', e => {
       mobileDragging = true;
@@ -1511,8 +1517,10 @@
     if (zoomOut) zoomOut.addEventListener('click', () => { mTargetZ = Math.min(8.5, mTargetZ + 0.5); });
 
     // Render loop
+    let _mTexFrames = 10;
     function mAnimate() {
       requestAnimationFrame(mAnimate);
+      if (_mTexFrames > 0) { mobileScreenTex.needsUpdate = true; _mTexFrames--; }
       mobilePhone.rotation.x += (mTargetRX - mobilePhone.rotation.x) * 0.08;
       mobilePhone.rotation.y += (mTargetRY - mobilePhone.rotation.y) * 0.08;
       mobileCamera.position.z += (mTargetZ - mobileCamera.position.z) * 0.1;
@@ -1658,9 +1666,13 @@
     // Reset tilt on each open
     mTargetRX = 0.08; mTargetRY = -0.12;
 
-    // Draw without loading external image (avoids CORS canvas taint = black screen)
+    // Draw screen now that mobileCTX is guaranteed ready
     drawMobileScreen(title, price, badge, mCurrentColor, null, cat);
-    if (mobileScreenTex) mobileScreenTex.needsUpdate = true;
+    if (mobileScreenTex) {
+      mobileScreenTex.needsUpdate = true;
+      // Force re-upload for several frames
+      _mTexFrames = 10;
+    }
   };
 
   window.closeMobilePhoneModal = function() {
