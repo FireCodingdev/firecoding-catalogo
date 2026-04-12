@@ -123,6 +123,20 @@
     .toast.error { border-color: rgba(255,68,68,0.4); }
     .url-preview { width: 100%; height: 160px; border-radius: 8px; overflow: hidden; background: var(--dark-surface); margin-top: 0.8rem; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.78rem; }
     .url-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .img-editor-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; align-items: start; }
+    .mockup-redirect-panel { background: var(--dark-surface); border: 1.5px dashed var(--dark-border); border-radius: 12px; padding: 1.2rem; position: sticky; top: 80px; }
+    .mockup-redirect-panel.has-link { border-color: rgba(33,143,207,0.4); background: rgba(33,143,207,0.04); }
+    .mockup-redirect-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .mockup-redirect-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem; }
+    .mockup-redirect-input-wrap { display: flex; gap: 0.5rem; }
+    .mockup-redirect-input-wrap input { flex: 1; padding: 0.65rem 0.85rem; background: var(--dark-card); border: 1.5px solid var(--dark-border); border-radius: 8px; color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    .mockup-redirect-input-wrap input:focus { border-color: var(--blue); }
+    .mockup-redirect-status { margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.75rem; display: none; }
+    .mockup-redirect-status.active { display: flex; align-items: center; gap: 0.5rem; background: rgba(33,143,207,0.1); border: 1px solid rgba(33,143,207,0.25); color: #64b5f6; }
+    .mockup-redirect-status.active a { color: var(--blue); text-decoration: none; word-break: break-all; }
+    .mockup-redirect-status.active a:hover { text-decoration: underline; }
+    .redirect-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(33,143,207,0.15); border: 1px solid rgba(33,143,207,0.3); color: var(--blue); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 4px; margin-left: 0.4rem; }
+    @media (max-width: 900px) { .img-editor-layout { grid-template-columns: 1fr; } .mockup-redirect-panel { position: static; } }
     .auth-gate { position: fixed; inset: 0; background: var(--dark-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; z-index: 9999; }
     .auth-gate h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; color: var(--fire-orange); }
     .auth-gate p { color: var(--text-muted); font-size: 0.88rem; text-align: center; max-width: 320px; }
@@ -218,7 +232,43 @@
     <!-- IMAGES -->
     <div class="panel" id="panelImages">
       <div class="section-header"><h2>Imagens & Mockup</h2><span style="font-size:0.8rem;color:var(--text-muted)">Imagens do card (catálogo) e do mockup de celular separadamente</span></div>
-      <div id="imageEditorList"><div style="color:var(--text-muted);padding:2rem 0">Carregando...</div></div>
+      <div class="img-editor-layout">
+        <div id="imageEditorList"><div style="color:var(--text-muted);padding:2rem 0">Carregando...</div></div>
+        <div class="mockup-redirect-panel" id="mockupRedirectPanel">
+          <div class="mockup-redirect-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Link de Redirecionamento
+          </div>
+          <p class="mockup-redirect-desc">Quando o mockup nao tiver imagens cadastradas, o site redireciona automaticamente o visitante para o link abaixo ao clicar no botao de demonstracao.</p>
+          <div class="form-field" style="margin-bottom:0.6rem">
+            <label style="font-size:0.68rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.06em">Selecionar Card</label>
+            <select id="redirectCardSelect" style="width:100%;padding:0.65rem 0.85rem;background:var(--dark-card);border:1.5px solid var(--dark-border);border-radius:8px;color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.2s" onchange="onRedirectCardChange()">
+              <option value="">Selecione um card</option>
+            </select>
+          </div>
+          <div class="form-field" style="margin-bottom:0.8rem">
+            <label style="font-size:0.68rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.06em">URL de Destino</label>
+            <div class="mockup-redirect-input-wrap">
+              <input type="url" id="redirectLinkInput" placeholder="https://exemplo.com/demo" />
+              <button class="btn btn-primary" style="white-space:nowrap;padding:0.5rem 0.85rem;font-size:0.8rem" onclick="saveRedirectLink()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Salvar
+              </button>
+            </div>
+          </div>
+          <div class="mockup-redirect-status" id="redirectLinkStatus">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            <span>Redirecionando para: <a id="redirectLinkDisplay" href="#" target="_blank" rel="noopener"></a></span>
+          </div>
+          <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--dark-border)">
+            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.5rem">Como funciona</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.6">
+              <div style="display:flex;gap:0.4rem;margin-bottom:0.35rem"><span style="color:var(--blue)">1.</span> Selecione o card que deseja configurar</div>
+              <div style="display:flex;gap:0.4rem;margin-bottom:0.35rem"><span style="color:var(--blue)">2.</span> Cole o link de demonstracao (ex: WhatsApp, Behance, site)</div>
+              <div style="display:flex;gap:0.4rem"><span style="color:var(--blue)">3.</span> Se o mockup nao tiver imagens, o site usa esse link automaticamente</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PEDIDOS -->
@@ -531,19 +581,79 @@ async function deleteCard(id) {
 function renderImageEditor() {
   const list = document.getElementById('imageEditorList');
   if (!_cards.length) { list.innerHTML = '<div style="color:var(--text-muted);padding:2rem 0">Crie cards primeiro.</div>'; return; }
+
+  // Populate redirect card select
+  const sel = document.getElementById('redirectCardSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Selecione um card</option>' + _cards.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+  if (prev) { sel.value = prev; onRedirectCardChange(false); }
+
   list.innerHTML = _cards.map(c => {
     const n = 4;
     const cardSlots = Array.from({length:n}, (_,i) => buildSlot(c.id, 'card', i, (c.images||[])[i]||'')).join('');
     const mockSlots = Array.from({length:n}, (_,i) => buildSlot(c.id, 'mockup', i, (c.mockup_images||[])[i]||'')).join('');
+    const hasMockup = (c.mockup_images||[]).some(x => x);
+    const redirectLink = c.mockup_redirect_url || '';
+    const redirectBadge = (!hasMockup && redirectLink)
+      ? `<span class="redirect-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Redirect ativo</span>`
+      : '';
     return `<div class="img-editor-card">
-      <div class="img-editor-title">${c.title}</div>
+      <div class="img-editor-title">${c.title}${redirectBadge}</div>
       <div class="img-editor-sub">${c.category} · R$ ${c.price}</div>
-      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fire-orange);margin-bottom:0.5rem">🖼 Imagens do Card (catálogo)</div>
+      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fire-orange);margin-bottom:0.5rem">Imagens do Card (catalogo)</div>
       <div class="img-slots" style="margin-bottom:1.2rem">${cardSlots}</div>
-      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--blue);margin-bottom:0.5rem">📱 Imagens do Mockup (celular)</div>
+      <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--blue);margin-bottom:0.5rem">Imagens do Mockup (celular)</div>
       <div class="img-slots">${mockSlots}</div>
     </div>`;
   }).join('');
+}
+
+// ============================================================
+// MOCKUP REDIRECT LINK
+// ============================================================
+function onRedirectCardChange(resetInput = true) {
+  const cardId = document.getElementById('redirectCardSelect').value;
+  const panel = document.getElementById('mockupRedirectPanel');
+  const statusEl = document.getElementById('redirectLinkStatus');
+  const displayEl = document.getElementById('redirectLinkDisplay');
+  const inputEl = document.getElementById('redirectLinkInput');
+
+  if (!cardId) {
+    if (resetInput) inputEl.value = '';
+    statusEl.classList.remove('active');
+    panel.classList.remove('has-link');
+    return;
+  }
+
+  const c = _cards.find(x => x.id === cardId);
+  const link = c?.mockup_redirect_url || '';
+  if (resetInput) inputEl.value = link;
+
+  if (link) {
+    const short = link.length > 40 ? link.slice(0,40) + '...' : link;
+    displayEl.textContent = short;
+    displayEl.href = link;
+    statusEl.classList.add('active');
+    panel.classList.add('has-link');
+  } else {
+    statusEl.classList.remove('active');
+    panel.classList.remove('has-link');
+  }
+}
+
+async function saveRedirectLink() {
+  const cardId = document.getElementById('redirectCardSelect').value;
+  if (!cardId) { showToast('Selecione um card primeiro.', 'error'); return; }
+  const url = document.getElementById('redirectLinkInput').value.trim();
+  const c = _cards.find(x => x.id === cardId);
+  if (!c) return;
+  const { error } = await _sb.from('catalog_cards').update({ mockup_redirect_url: url || null }).eq('id', cardId);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  addLog(`${url ? 'Definiu' : 'Removeu'} redirect do mockup de "${c.title}"`);
+  showToast(url ? '✅ Link de redirect salvo!' : '🗑️ Link removido.', 'success');
+  await loadCards();
+  document.getElementById('redirectCardSelect').value = cardId;
+  onRedirectCardChange(true);
 }
 
 function buildSlot(cardId, type, i, url) {
