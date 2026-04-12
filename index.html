@@ -1690,7 +1690,7 @@ document.addEventListener('DOMContentLoaded', () => {
           first ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
           first = false;
         }
-        const alpha = 0.03 + 0.07 * (1 - c / COLS);
+        const alpha = 0.03 + 0.37 * (1 - c / COLS);
         ctx.strokeStyle = COLOR_LINE + alpha + ')';
         ctx.lineWidth = 0.8;
         ctx.stroke();
