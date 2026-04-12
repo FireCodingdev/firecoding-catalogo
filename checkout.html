@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — FireCoding</title>
+  <link rel="icon" href="imagens/logo-firecoding.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --fire-orange: #FF5E1A;
+      --fire-amber:  #FFA040;
+      --fire-red:    #E53A1A;
+      --dark-bg:     #0A0A0C;
+      --dark-surface:#111116;
+      --dark-card:   #16161D;
+      --dark-border: #222230;
+      --text-primary:#F4F4F6;
+      --text-muted:  #7B7B90;
+      --text-dim:    #3E3E52;
+      --glow-orange: rgba(255,94,26,0.35);
+      --glow-soft:   rgba(255,94,26,0.12);
+      --blue-soft:   #218fcf;
+      --success:     #22c55e;
+      --success-glow:rgba(34,197,94,0.25);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      cursor: none;
+    }
+    .cursor { width: 10px; height: 10px; background: var(--fire-orange); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.08s; mix-blend-mode: screen; }
+    .cursor-ring { width: 34px; height: 34px; border: 1.5px solid rgba(255,94,26,0.45); border-radius: 50%; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: transform 0.18s ease; }
+    @media(max-width:768px){ body{cursor:auto} .cursor,.cursor-ring{display:none} }
+
+    /* Noise texture */
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(1.5rem,5vw,4rem); height: 64px;
+      background: rgba(10,10,12,0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--dark-border);
+    }
+    .nav-logo { display:flex; align-items:center; gap:0.5rem; text-decoration:none; }
+    .nav-logo img { width:34px; height:34px; object-fit:contain; }
+    .nav-logo span { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--fire-orange); }
+    .nav-logo span em { color:var(--blue-soft); font-style:normal; }
+    .nav-back {
+      display:flex; align-items:center; gap:0.5rem;
+      color:var(--text-muted); text-decoration:none; font-size:0.83rem; font-weight:500;
+      transition:color 0.2s;
+    }
+    .nav-back:hover { color:var(--text-primary); }
+    .nav-back svg { width:16px; height:16px; }
+
+    /* ── STEPS BAR ── */
+    .steps-bar {
+      position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+      background: var(--dark-surface); border-bottom: 1px solid var(--dark-border);
+      display: flex; align-items: center; justify-content: center;
+      padding: 0.75rem 1.5rem; gap: 0;
+    }
+    .step {
+      display: flex; align-items: center; gap: 0.45rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--text-dim);
+      transition: color 0.3s;
+    }
+    .step.active { color: var(--fire-orange); }
+    .step.done { color: var(--success); }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--dark-border); color: var(--text-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .step.active .step-num { background: var(--fire-orange); color: #fff; box-shadow: 0 0 12px var(--glow-orange); }
+    .step.done .step-num { background: var(--success); color: #fff; }
+    .step-sep { width: 40px; height: 1px; background: var(--dark-border); margin: 0 0.6rem; flex-shrink: 0; }
+    @media(max-width:500px){ .step-label { display:none; } .step-sep { width:24px; } }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      position: relative; z-index: 1;
+      padding-top: 130px; /* nav + steps */
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding-bottom: 4rem;
+    }
+    .checkout-wrap {
+      width: 100%; max-width: 980px;
+      padding: 0 1.25rem;
+      display: grid; grid-template-columns: 1fr 380px;
+      gap: 2rem; align-items: flex-start;
+    }
+    @media(max-width:860px){ .checkout-wrap { grid-template-columns:1fr; } }
+
+    /* ── STEP PANELS ── */
+    .step-panel { display:none; }
+    .step-panel.active { display:block; }
+
+    /* ── SECTION CARD ── */
+    .section-card {
+      background: var(--dark-card); border: 1px solid var(--dark-border);
+      border-radius: 16px; padding: 1.75rem; margin-bottom: 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .section-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, var(--fire-orange), var(--fire-red));
+      opacity: 0;
+    }
+    .section-card:focus-within::before { opacity:1; }
+    .section-title-sm {
+      font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700;
+      color:var(--text-primary); margin-bottom:1.25rem;
+      display:flex; align-items:center; gap:0.5rem;
+    }
+    .section-title-sm svg { width:16px; height:16px; color:var(--fire-orange); }
+
+    /* ── FORM FIELDS ── */
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; }
+    .field-row.single { grid-template-columns:1fr; }
+    @media(max-width:500px){ .field-row { grid-template-columns:1fr; } }
+    .field { display:flex; flex-direction:column; gap:0.3rem; margin-bottom:0.85rem; }
+    .field:last-child { margin-bottom:0; }
+    .field label { font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); }
+    .field input, .field select, .field textarea {
+      background: var(--dark-surface); border: 1.5px solid var(--dark-border);
+      border-radius: 10px; padding: 0.75rem 0.9rem;
+      color: var(--text-primary); font-family:'DM Sans',sans-serif; font-size:0.9rem;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s; width:100%;
+    }
+    .field input::placeholder, .field textarea::placeholder { color:var(--text-dim); }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--fire-orange); box-shadow: 0 0 0 3px rgba(255,94,26,0.1);
+    }
+    .field input.error { border-color:#ff4444; }
+    .field select { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%237B7B90' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0.8rem center; background-size:18px; padding-right:2.2rem; }
+    .field-hint { font-size:0.7rem; color:var(--text-dim); margin-top:0.2rem; }
+
+    /* ── PAYMENT METHOD TABS ── */
+    .pay-tabs { display:flex; gap:0.6rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+    .pay-tab {
+      flex:1; min-width:90px; padding:0.65rem 0.5rem;
+      background:var(--dark-surface); border:1.5px solid var(--dark-border);
+      border-radius:10px; display:flex; flex-direction:column; align-items:center; gap:0.3rem;
+      cursor:pointer; transition:all 0.2s; color:var(--text-muted); font-size:0.72rem; font-weight:600;
+    }
+    .pay-tab svg { width:22px; height:22px; }
+    .pay-tab.selected { border-color:var(--fire-orange); background:rgba(255,94,26,0.08); color:var(--fire-orange); }
+    .pay-tab:hover:not(.selected) { border-color:rgba(255,94,26,0.3); color:var(--text-primary); }
+    .pay-content { display:none; }
+    .pay-content.active { display:block; }
+
+    /* Card number formatting */
+    .card-icons { display:flex; gap:0.4rem; margin-bottom:0.8rem; }
+    .card-icon { width:38px; height:24px; border-radius:4px; background:var(--dark-surface); border:1px solid var(--dark-border); display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--text-dim); font-weight:700; letter-spacing:0.03em; }
+    .card-icon.visa { color:#1a6fff; }
+    .card-icon.master { color:#eb001b; }
+    .card-icon.elo { color:#FFD100; }
+    .card-icon.pix-icon { color:var(--success); }
+
+    /* installments */
+    .installments-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; }
+    .installment-opt {
+      padding:0.55rem 0.4rem; border-radius:8px; border:1.5px solid var(--dark-border);
+      background:var(--dark-surface); cursor:pointer; transition:all 0.2s; text-align:center;
+    }
+    .installment-opt:hover { border-color:rgba(255,94,26,0.35); }
+    .installment-opt.selected { border-color:var(--fire-orange); background:rgba(255,94,26,0.08); }
+    .installment-opt .inst-n { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:var(--text-primary); }
+    .installment-opt .inst-val { font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem; }
+    .installment-opt.selected .inst-n { color:var(--fire-orange); }
+
+    /* PIX block */
+    .pix-block {
+      text-align:center; padding:1.5rem 1rem;
+      background:var(--dark-surface); border-radius:12px;
+      border:1px solid var(--dark-border);
+    }
+    .pix-qr {
+      width:160px; height:160px; margin:1rem auto 0.75rem;
+      background: var(--dark-card); border:1px solid var(--dark-border); border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text-dim); font-size:0.72rem;
+    }
+    .pix-key {
+      font-family:monospace; font-size:0.78rem; color:var(--fire-orange);
+      background:rgba(255,94,26,0.08); border:1px solid rgba(255,94,26,0.2);
+      border-radius:8px; padding:0.55rem 0.9rem; word-break:break-all;
+      cursor:pointer; transition:background 0.2s; margin:0.5rem 0;
+      display:inline-block; max-width:100%;
+    }
+    .pix-key:hover { background:rgba(255,94,26,0.15); }
+    .pix-hint { font-size:0.72rem; color:var(--text-muted); line-height:1.6; }
+    .pix-steps { text-align:left; margin:1rem 0 0; }
+    .pix-step { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem; font-size:0.78rem; color:var(--text-muted); }
+    .pix-step-n { width:20px; height:20px; border-radius:50%; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:var(--success); font-size:0.65rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:0.05rem; }
+
+    /* BOLETO block */
+    .boleto-block { text-align:center; padding:1rem; }
+    .boleto-hint { font-size:0.82rem; color:var(--text-muted); line-height:1.7; margin-bottom:1rem; }
+
+    /* ── ORDER SUMMARY (right column) ── */
+    .summary-card {
+      background:var(--dark-card); border:1px solid var(--dark-border);
+      border-radius:16px; padding:1.5rem; position:sticky; top:140px;
+    }
+    .summary-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; margin-bottom:1.25rem; color:var(--text-primary); }
+    .summary-product { display:flex; align-items:flex-start; gap:0.85rem; padding-bottom:1rem; border-bottom:1px solid var(--dark-border); margin-bottom:1rem; }
+    .summary-img { width:64px; height:48px; border-radius:8px; object-fit:cover; background:var(--dark-surface); border:1px solid var(--dark-border); flex-shrink:0; }
+    .summary-img-placeholder { width:64px; height:48px; border-radius:8px; background:var(--dark-surface); border:1px solid var(--dark-border); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.7rem; }
+    .summary-product-info { flex:1; min-width:0; }
+    .summary-product-cat { font-size:0.64rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--fire-orange); }
+    .summary-product-name { font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-top:0.1rem; line-height:1.3; }
+    .summary-product-tag { display:inline-flex; font-size:0.62rem; background:rgba(255,94,26,0.08); border:1px solid rgba(255,94,26,0.15); border-radius:4px; padding:0.1rem 0.45rem; color:var(--fire-amber); margin-top:0.3rem; }
+    .summary-line { display:flex; align-items:center; justify-content:space-between; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem; }
+    .summary-line.total { color:var(--text-primary); font-weight:700; font-size:1rem; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--dark-border); }
+    .summary-line.total .val { font-family:'Syne',sans-serif; font-size:1.15rem; color:var(--fire-orange); }
+    .summary-guarantee {
+      margin-top:1rem; padding:0.75rem; background:rgba(34,197,94,0.06);
+      border:1px solid rgba(34,197,94,0.18); border-radius:10px;
+      display:flex; align-items:flex-start; gap:0.6rem;
+    }
+    .summary-guarantee svg { width:16px; height:16px; color:var(--success); flex-shrink:0; margin-top:0.1rem; }
+    .summary-guarantee p { font-size:0.72rem; color:var(--text-muted); line-height:1.6; }
+    .summary-guarantee strong { color:var(--success); }
+    .summary-features { margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem; }
+    .summary-feature { display:flex; align-items:center; gap:0.5rem; font-size:0.73rem; color:var(--text-muted); }
+    .summary-feature svg { width:13px; height:13px; color:var(--fire-orange); flex-shrink:0; }
+
+    /* ── CTA BUTTON ── */
+    .cta-btn {
+      width:100%; padding:0.95rem; margin-top:1.25rem;
+      background:linear-gradient(135deg,var(--fire-orange),var(--fire-red));
+      color:#fff; border:none; border-radius:10px;
+      font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:700;
+      cursor:pointer; transition:transform 0.15s, box-shadow 0.2s;
+      box-shadow:0 0 24px var(--glow-orange),0 4px 20px rgba(0,0,0,0.4);
+      display:flex; align-items:center; justify-content:center; gap:0.5rem;
+      position:relative; overflow:hidden;
+    }
+    .cta-btn::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.08),transparent); pointer-events:none; }
+    .cta-btn:hover { transform:translateY(-2px); box-shadow:0 0 36px var(--glow-orange),0 8px 30px rgba(0,0,0,0.5); }
+    .cta-btn:active { transform:translateY(0); }
+    .cta-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+    .cta-btn .spinner { width:18px; height:18px; border:2.5px solid rgba(255,255,255,0.35); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── SECURITY BADGES ── */
+    .security-row { display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:0.85rem; flex-wrap:wrap; }
+    .security-badge { display:flex; align-items:center; gap:0.3rem; font-size:0.68rem; color:var(--text-dim); }
+    .security-badge svg { width:12px; height:12px; color:var(--success); }
+
+    /* ── SUCCESS STATE ── */
+    #successPanel {
+      display:none; text-align:center;
+      padding:3rem 1.5rem; max-width:560px; margin:0 auto;
+    }
+    #successPanel.active { display:block; }
+    .success-icon {
+      width:80px; height:80px; border-radius:50%;
+      background:rgba(34,197,94,0.12); border:2px solid rgba(34,197,94,0.3);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 1.5rem;
+      box-shadow:0 0 40px var(--success-glow);
+      animation:successPop 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes successPop { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+    .success-icon svg { width:36px; height:36px; color:var(--success); }
+    .success-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--text-primary); margin-bottom:0.6rem; }
+    .success-sub { font-size:0.9rem; color:var(--text-muted); line-height:1.7; max-width:420px; margin:0 auto 2rem; }
+    .success-actions { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+    .success-btn-primary {
+      display:inline-flex; align-items:center; gap:0.45rem;
+      background:var(--fire-orange); color:#fff; border:none; border-radius:8px;
+      padding:0.7rem 1.4rem; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:700;
+      cursor:pointer; text-decoration:none; transition:background 0.2s;
+    }
+    .success-btn-primary:hover { background:var(--fire-red); }
+    .success-btn-secondary {
+      display:inline-flex; align-items:center; gap:0.45rem;
+      background:transparent; color:var(--text-muted); border:1px solid var(--dark-border);
+      border-radius:8px; padding:0.7rem 1.4rem; font-family:'DM Sans',sans-serif;
+      font-size:0.88rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all 0.2s;
+    }
+    .success-btn-secondary:hover { border-color:var(--fire-orange); color:var(--text-primary); }
+    .success-order-box {
+      background:var(--dark-card); border:1px solid var(--dark-border); border-radius:12px;
+      padding:1.2rem; margin-bottom:2rem; text-align:left;
+    }
+    .success-order-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.4rem; }
+    .success-order-row:last-child { margin-bottom:0; }
+    .success-order-row .label { color:var(--text-muted); }
+    .success-order-row .value { color:var(--text-primary); font-weight:600; }
+    .success-order-row .value.orange { color:var(--fire-orange); }
+
+    /* ── TOAST ── */
+    .toast-container { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); z-index:99999; display:flex; flex-direction:column; align-items:center; gap:0.5rem; pointer-events:none; }
+    .toast { background:#131318; border:1px solid var(--dark-border); border-radius:12px; padding:0.7rem 1.2rem; display:flex; align-items:center; gap:0.6rem; box-shadow:0 8px 30px rgba(0,0,0,0.6); font-size:0.85rem; color:var(--text-primary); animation:toastIn 0.35s cubic-bezier(0.16,1,0.3,1) both; pointer-events:all; }
+    .toast.success { border-color:rgba(34,197,94,0.35); }
+    .toast.error { border-color:rgba(255,68,68,0.35); }
+    .toast.exit { animation:toastOut 0.3s ease forwards; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(16px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes toastOut { to{opacity:0;transform:translateY(12px) scale(0.95)} }
+
+    /* ── FIELD ERROR ── */
+    .field-error { font-size:0.7rem; color:#ff6b6b; margin-top:0.2rem; display:none; }
+    .field-error.visible { display:block; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .checkout-wrap { animation:fadeUp 0.5s ease both; }
+  </style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="imagens/logo-firecoding.png" alt="FireCoding">
+    <span>Fire<em>Coding</em></span>
+  </a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Voltar ao catálogo
+  </a>
+</nav>
+
+<!-- STEPS BAR -->
+<div class="steps-bar">
+  <div class="step active" id="step1Indicator">
+    <div class="step-num">1</div>
+    <span class="step-label">Seus dados</span>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step" id="step2Indicator">
+    <div class="step-num">2</div>
+    <span class="step-label">Pagamento</span>
+  </div>
+  <div class="step-sep"></div>
+  <div class="step" id="step3Indicator">
+    <div class="step-num">3</div>
+    <span class="step-label">Confirmação</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- SUCCESS PANEL -->
+  <div id="successPanel">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1 class="success-title">Pedido Confirmado! 🔥</h1>
+    <p class="success-sub">Recebemos seu pedido e nossa equipe entrará em contato em até <strong style="color:var(--fire-orange)">2 horas</strong> pelo WhatsApp para confirmar os detalhes e iniciar o projeto.</p>
+    <div class="success-order-box" id="successOrderBox"></div>
+    <div class="success-actions">
+      <a href="https://wa.me/5574988482293" target="_blank" class="success-btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Falar no WhatsApp
+      </a>
+      <a href="index.html" class="success-btn-secondary">Ver mais modelos</a>
+    </div>
+  </div>
+
+  <!-- CHECKOUT WRAP -->
+  <div class="checkout-wrap" id="checkoutWrap">
+
+    <!-- LEFT: Steps -->
+    <div class="checkout-left">
+
+      <!-- STEP 1: Dados pessoais -->
+      <div class="step-panel active" id="panel1">
+        <div class="section-card">
+          <div class="section-title-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Informações Pessoais
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Nome completo *</label>
+              <input type="text" id="fName" placeholder="Seu nome completo">
+              <span class="field-error" id="fNameErr">Informe seu nome</span>
+            </div>
+            <div class="field">
+              <label>E-mail *</label>
+              <input type="email" id="fEmail" placeholder="seu@email.com">
+              <span class="field-error" id="fEmailErr">E-mail inválido</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>WhatsApp *</label>
+              <input type="tel" id="fPhone" placeholder="(00) 00000-0000" maxlength="15">
+              <span class="field-error" id="fPhoneErr">Informe seu WhatsApp</span>
+            </div>
+            <div class="field">
+              <label>CPF / CNPJ *</label>
+              <input type="text" id="fDoc" placeholder="000.000.000-00" maxlength="18">
+              <span class="field-error" id="fDocErr">Documento inválido</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Briefing do Projeto
+          </div>
+          <div class="field field-row single">
+            <label>Segmento / Nicho do negócio *</label>
+            <select id="fSegmento">
+              <option value="">Selecione...</option>
+              <option>Saúde & Bem-estar</option>
+              <option>Odontologia</option>
+              <option>Jurídico / Advocacia</option>
+              <option>Imóveis</option>
+              <option>Educação / Cursos</option>
+              <option>Restaurante / Food</option>
+              <option>Beleza & Estética</option>
+              <option>Tecnologia / SaaS</option>
+              <option>E-commerce</option>
+              <option>Eventos</option>
+              <option>Fitness / Academia</option>
+              <option>Outro</option>
+            </select>
+            <span class="field-error" id="fSegErr">Selecione um segmento</span>
+          </div>
+          <div class="field field-row single">
+            <label>Nome do seu negócio *</label>
+            <input type="text" id="fBusiness" placeholder="Ex: Clínica Dra. Ana Souza">
+            <span class="field-error" id="fBusinessErr">Informe o nome do negócio</span>
+          </div>
+          <div class="field field-row single">
+            <label>Cores preferidas / identidade visual</label>
+            <input type="text" id="fColors" placeholder="Ex: azul escuro e dourado, ou sem preferência">
+          </div>
+          <div class="field field-row single">
+            <label>Informações adicionais</label>
+            <textarea id="fObs" rows="3" placeholder="Links de referência, Instagram, logomarca, observações..."></textarea>
+          </div>
+        </div>
+
+        <button class="cta-btn" onclick="goToStep2()">
+          Continuar para Pagamento
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="security-row">
+          <span class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Dados protegidos</span>
+          <span class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Conexão segura</span>
+        </div>
+      </div>
+
+      <!-- STEP 2: Pagamento -->
+      <div class="step-panel" id="panel2">
+        <div class="section-card">
+          <div class="section-title-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Forma de Pagamento
+          </div>
+
+          <div class="pay-tabs">
+            <div class="pay-tab selected" onclick="selectPayMethod('card', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Cartão
+            </div>
+            <div class="pay-tab" onclick="selectPayMethod('pix', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l4.5 4.5M20 20l-4.5-4.5M20 4l-4.5 4.5M4 20l4.5-4.5M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+              PIX
+            </div>
+            <div class="pay-tab" onclick="selectPayMethod('boleto', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="13" y1="9" x2="13" y2="15"/><line x1="16" y1="9" x2="16" y2="15"/></svg>
+              Boleto
+            </div>
+          </div>
+
+          <!-- CARTÃO -->
+          <div class="pay-content active" id="payCard">
+            <div class="card-icons">
+              <div class="card-icon visa">VISA</div>
+              <div class="card-icon master">●●</div>
+              <div class="card-icon elo">ELO</div>
+              <div class="card-icon" style="color:#ff5f00">●◑</div>
+            </div>
+            <div class="field">
+              <label>Número do cartão *</label>
+              <input type="text" id="fCardNum" placeholder="0000 0000 0000 0000" maxlength="19">
+              <span class="field-error" id="fCardNumErr">Número inválido</span>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Nome no cartão *</label>
+                <input type="text" id="fCardName" placeholder="NOME SOBRENOME" style="text-transform:uppercase">
+                <span class="field-error" id="fCardNameErr">Informe o nome</span>
+              </div>
+              <div class="field">
+                <label>Validade *</label>
+                <input type="text" id="fCardExp" placeholder="MM/AA" maxlength="5">
+                <span class="field-error" id="fCardExpErr">Data inválida</span>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>CVV *</label>
+                <input type="text" id="fCardCvv" placeholder="000" maxlength="4">
+                <span class="field-error" id="fCardCvvErr">CVV inválido</span>
+              </div>
+              <div class="field"></div>
+            </div>
+            <div class="section-title-sm" style="margin:1rem 0 0.75rem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Parcelamento
+            </div>
+            <div class="installments-grid" id="installmentsGrid"></div>
+          </div>
+
+          <!-- PIX -->
+          <div class="pay-content" id="payPix">
+            <div class="pix-block">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--success);margin-bottom:0.5rem"><path d="M4 4l4.5 4.5M20 20l-4.5-4.5M20 4l-4.5 4.5M4 20l4.5-4.5M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+              <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.25rem">Pagamento instantâneo com</p>
+              <p style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--success)">PIX — Aprovação imediata</p>
+              <div class="pix-qr" id="pixQrWrap">
+                <span>QR Code gerado<br>após confirmação</span>
+              </div>
+              <div class="pix-key" id="pixKeyBox" onclick="copyPix()" title="Clique para copiar">
+                📋 firecoding@pix.com.br
+              </div>
+              <p class="pix-hint">Clique na chave acima para copiar</p>
+              <div class="pix-steps">
+                <div class="pix-step"><div class="pix-step-n">1</div>Abra o app do seu banco e acesse a área PIX</div>
+                <div class="pix-step"><div class="pix-step-n">2</div>Cole a chave ou escaneie o QR Code</div>
+                <div class="pix-step"><div class="pix-step-n">3</div>Confirme o pagamento e envie o comprovante no WhatsApp</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOLETO -->
+          <div class="pay-content" id="payBoleto">
+            <div class="boleto-block">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted);margin-bottom:0.75rem"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="13" y1="9" x2="13" y2="15"/><line x1="16" y1="9" x2="16" y2="15"/></svg>
+              <p class="boleto-hint">O boleto será gerado e enviado para seu e-mail após a confirmação do pedido. <strong style="color:var(--text-primary)">Prazo de vencimento: 2 dias úteis.</strong></p>
+              <p style="font-size:0.75rem;color:var(--text-dim)">⚠️ O projeto só inicia após a confirmação do pagamento pelo banco (1–2 dias úteis).</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0.75rem">
+          <button class="cta-btn" style="flex:0 0 auto;width:44px;padding:0;background:var(--dark-card);border:1px solid var(--dark-border);color:var(--text-muted);box-shadow:none" onclick="goToStep1()" title="Voltar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <button class="cta-btn" style="flex:1" id="btnFinalizar" onclick="finalizeOrder()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Finalizar Pedido
+          </button>
+        </div>
+        <div class="security-row">
+          <span class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Pagamento seguro</span>
+          <span class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>SSL 256-bit</span>
+          <span class="security-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Dados criptografados</span>
+        </div>
+      </div>
+
+    </div><!-- /checkout-left -->
+
+    <!-- RIGHT: Order summary -->
+    <div class="checkout-right">
+      <div class="summary-card">
+        <div class="summary-title">Resumo do Pedido</div>
+        <div class="summary-product">
+          <img class="summary-img" id="summaryImg" src="" alt="" onerror="this.style.display='none'">
+          <div class="summary-product-info">
+            <div class="summary-product-cat" id="summaryCat">Categoria</div>
+            <div class="summary-product-name" id="summaryName">Carregando...</div>
+            <div class="summary-product-tag">Entrega em até 72h</div>
+          </div>
+        </div>
+        <div class="summary-line"><span>Modelo</span><span id="summaryPriceBase">—</span></div>
+        <div class="summary-line"><span>Personalização</span><span style="color:var(--success)">Inclusa</span></div>
+        <div class="summary-line"><span>Hospedagem (30 dias)</span><span style="color:var(--success)">Inclusa</span></div>
+        <div class="summary-line"><span>Suporte pós-entrega</span><span style="color:var(--success)">30 dias</span></div>
+        <div class="summary-line total">
+          <span>Total</span>
+          <span class="val" id="summaryTotal">—</span>
+        </div>
+
+        <div class="summary-guarantee">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <p><strong>Garantia de satisfação</strong> — Se não ficar satisfeito, refazemos até acertar ou devolvemos seu dinheiro.</p>
+        </div>
+
+        <div class="summary-features">
+          <div class="summary-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            100% Responsivo (mobile + desktop)
+          </div>
+          <div class="summary-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            SEO otimizado
+          </div>
+          <div class="summary-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Código-fonte entregue
+          </div>
+          <div class="summary-feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Formulário de contato integrado
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /checkout-wrap -->
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// SUPABASE CONFIG (mesma do index.html)
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL     = 'https://yjunwuggojlzymyfbqwc.supabase.co';
+const SUPABASE_ANON_KEY= 'sb_publishable_IdvmG-xFdGaUon6WBo4QLA_FebYoeej';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let _product = { id:'', title:'', price:0, category:'', imgSrc:'' };
+let _payMethod = 'card';
+let _installment = 1;
+let _session = null;
+let _orderId = null;
+
+// ═══════════════════════════════════════════════════
+// INIT — pega dados da URL e sessão
+// ═══════════════════════════════════════════════════
+(async function init() {
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+  (function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+
+  // Sessão
+  const { data: { session } } = await _supabase.auth.getSession();
+  _session = session;
+  if (!session) { window.location.href = 'index.html'; return; }
+
+  // Lê params da URL
+  const params = new URLSearchParams(window.location.search);
+  _product.id       = params.get('id')       || '';
+  _product.title    = decodeURIComponent(params.get('title')    || 'Modelo');
+  _product.price    = parseInt(params.get('price') || '0', 10);
+  _product.category = decodeURIComponent(params.get('cat')      || '');
+  _product.imgSrc   = decodeURIComponent(params.get('img')      || '');
+
+  // Preenche summary
+  document.getElementById('summaryName').textContent = _product.title;
+  document.getElementById('summaryCat').textContent  = _product.category;
+  const priceStr = _product.price ? `R$ ${_product.price.toLocaleString('pt-BR')}` : '—';
+  document.getElementById('summaryPriceBase').textContent = priceStr;
+  document.getElementById('summaryTotal').textContent = priceStr;
+  if (_product.imgSrc) document.getElementById('summaryImg').src = _product.imgSrc;
+
+  // Pré-preenche email se logado
+  if (session.user.email) document.getElementById('fEmail').value = session.user.email;
+  const name = session.user.user_metadata?.name || '';
+  if (name) document.getElementById('fName').value = name;
+
+  // Monta parcelamento
+  buildInstallments(_product.price);
+
+  // Máscaras
+  setupMasks();
+})();
+
+// ═══════════════════════════════════════════════════
+// PARCELAMENTO
+// ═══════════════════════════════════════════════════
+function buildInstallments(price) {
+  if (!price) return;
+  const grid = document.getElementById('installmentsGrid');
+  const options = [1,2,3,4,6,12];
+  grid.innerHTML = options.map(n => {
+    const val = price / n;
+    const label = val.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    const suffix = n === 1 ? 'à vista' : `${n}x sem juros`;
+    return `<div class="installment-opt ${n===1?'selected':''}" onclick="selectInstallment(${n}, this)">
+      <div class="inst-n">${n}x</div>
+      <div class="inst-val">${label}</div>
+      <div class="inst-val">${n===1?'à vista':'s/ juros'}</div>
+    </div>`;
+  }).join('');
+}
+
+window.selectInstallment = function(n, el) {
+  _installment = n;
+  document.querySelectorAll('.installment-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const val = (_product.price / n).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  const totalStr = `R$ ${_product.price.toLocaleString('pt-BR')}`;
+  document.getElementById('summaryTotal').textContent = n === 1 ? totalStr : `${n}x ${val}`;
+};
+
+// ═══════════════════════════════════════════════════
+// PAYMENT METHOD
+// ═══════════════════════════════════════════════════
+window.selectPayMethod = function(method, tab) {
+  _payMethod = method;
+  document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('selected'));
+  tab.classList.add('selected');
+  document.querySelectorAll('.pay-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('pay' + method.charAt(0).toUpperCase() + method.slice(1)).classList.add('active');
+};
+
+// ═══════════════════════════════════════════════════
+// STEPS NAVIGATION
+// ═══════════════════════════════════════════════════
+window.goToStep2 = function() {
+  if (!validateStep1()) return;
+  setStep(2);
+};
+window.goToStep1 = function() {
+  setStep(1);
+};
+
+function setStep(n) {
+  document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i+1===n));
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step'+i+'Indicator');
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+  });
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ═══════════════════════════════════════════════════
+// VALIDATIONS
+// ═══════════════════════════════════════════════════
+function validateStep1() {
+  let ok = true;
+  const checks = [
+    [document.getElementById('fName'),     document.getElementById('fNameErr'),     v => v.trim().length >= 3],
+    [document.getElementById('fEmail'),    document.getElementById('fEmailErr'),    v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],
+    [document.getElementById('fPhone'),    document.getElementById('fPhoneErr'),    v => v.replace(/\D/g,'').length >= 10],
+    [document.getElementById('fDoc'),      document.getElementById('fDocErr'),      v => v.replace(/\D/g,'').length >= 11],
+    [document.getElementById('fSegmento'), document.getElementById('fSegErr'),      v => v !== ''],
+    [document.getElementById('fBusiness'), document.getElementById('fBusinessErr'), v => v.trim().length >= 2],
+  ];
+  checks.forEach(([input, err, fn]) => {
+    const valid = fn(input.value);
+    err.classList.toggle('visible', !valid);
+    input.classList.toggle('error', !valid);
+    if (!valid) ok = false;
+  });
+  return ok;
+}
+
+function validateStep2() {
+  if (_payMethod !== 'card') return true;
+  let ok = true;
+  const checks = [
+    [document.getElementById('fCardNum'),  document.getElementById('fCardNumErr'),  v => v.replace(/\s/g,'').length === 16],
+    [document.getElementById('fCardName'), document.getElementById('fCardNameErr'), v => v.trim().length >= 3],
+    [document.getElementById('fCardExp'),  document.getElementById('fCardExpErr'),  v => /^\d{2}\/\d{2}$/.test(v)],
+    [document.getElementById('fCardCvv'),  document.getElementById('fCardCvvErr'),  v => v.length >= 3],
+  ];
+  checks.forEach(([input, err, fn]) => {
+    const valid = fn(input.value);
+    err.classList.toggle('visible', !valid);
+    input.classList.toggle('error', !valid);
+    if (!valid) ok = false;
+  });
+  return ok;
+}
+
+// ═══════════════════════════════════════════════════
+// FINALIZE ORDER
+// ═══════════════════════════════════════════════════
+window.finalizeOrder = async function() {
+  if (!validateStep2()) return;
+
+  const btn = document.getElementById('btnFinalizar');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Processando...';
+
+  try {
+    // Monta dados do pedido
+    const orderData = {
+      user_id:       _session?.user?.id || null,
+      user_email:    document.getElementById('fEmail').value.trim(),
+      user_name:     document.getElementById('fName').value.trim(),
+      user_phone:    document.getElementById('fPhone').value.trim(),
+      user_doc:      document.getElementById('fDoc').value.trim(),
+      card_id:       _product.id,
+      card_title:    _product.title,
+      card_category: _product.category,
+      price:         _product.price,
+      pay_method:    _payMethod,
+      installments:  _payMethod === 'card' ? _installment : 1,
+      segmento:      document.getElementById('fSegmento').value,
+      business_name: document.getElementById('fBusiness').value.trim(),
+      colors:        document.getElementById('fColors').value.trim(),
+      obs:           document.getElementById('fObs').value.trim(),
+      status:        'pending',
+    };
+
+    // Salva no Supabase
+    const { data, error } = await _supabase.from('orders').insert(orderData).select().single();
+
+    if (error) throw error;
+    _orderId = data?.id || ('FC-' + Date.now());
+
+    // Envia notificação WhatsApp para o admin
+    const waMsg = buildWhatsAppMsg(orderData, _orderId);
+    setTimeout(() => window.open('https://wa.me/5574988482293?text=' + encodeURIComponent(waMsg), '_blank'), 800);
+
+    // Mostra tela de sucesso
+    showSuccess(orderData, _orderId);
+
+  } catch(err) {
+    console.error(err);
+    // Mesmo sem salvar no banco, ainda envia o WhatsApp
+    const fallbackId = 'FC-' + Date.now();
+    const orderData = {
+      user_email:    document.getElementById('fEmail').value.trim(),
+      user_name:     document.getElementById('fName').value.trim(),
+      user_phone:    document.getElementById('fPhone').value.trim(),
+      card_title:    _product.title,
+      price:         _product.price,
+      pay_method:    _payMethod,
+      installments:  _payMethod === 'card' ? _installment : 1,
+      segmento:      document.getElementById('fSegmento').value,
+      business_name: document.getElementById('fBusiness').value.trim(),
+    };
+    const waMsg = buildWhatsAppMsg(orderData, fallbackId);
+    setTimeout(() => window.open('https://wa.me/5574988482293?text=' + encodeURIComponent(waMsg), '_blank'), 800);
+    showSuccess(orderData, fallbackId);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Pedido Finalizado!';
+};
+
+function buildWhatsAppMsg(order, id) {
+  const payLabels = { card:`Cartão (${order.installments}x)`, pix:'PIX', boleto:'Boleto' };
+  const priceStr = order.price ? `R$ ${order.price.toLocaleString('pt-BR')}` : '—';
+  return `🔥 *NOVO PEDIDO — FireCoding Catálogo*
+
+📋 *Pedido:* ${id}
+📦 *Modelo:* ${order.card_title}
+💰 *Valor:* ${priceStr}
+💳 *Pagamento:* ${payLabels[order.pay_method] || order.pay_method}
+
+👤 *Cliente:*
+• Nome: ${order.user_name}
+• E-mail: ${order.user_email}
+• WhatsApp: ${order.user_phone || '—'}
+
+🏢 *Projeto:*
+• Negócio: ${order.business_name || '—'}
+• Segmento: ${order.segmento || '—'}`;
+}
+
+function showSuccess(order, id) {
+  setStep(3);
+  document.getElementById('checkoutWrap').style.display = 'none';
+  const panel = document.getElementById('successPanel');
+  panel.style.display = 'block';
+  setTimeout(() => panel.classList.add('active'), 50);
+
+  const priceStr = order.price ? `R$ ${order.price.toLocaleString('pt-BR')}` : '—';
+  const payLabels = { card:`Cartão de Crédito (${order.installments}x)`, pix:'PIX', boleto:'Boleto' };
+  document.getElementById('successOrderBox').innerHTML = `
+    <div class="success-order-row"><span class="label">Nº do Pedido</span><span class="value orange">${id}</span></div>
+    <div class="success-order-row"><span class="label">Modelo</span><span class="value">${order.card_title}</span></div>
+    <div class="success-order-row"><span class="label">Pagamento</span><span class="value">${payLabels[order.pay_method] || '—'}</span></div>
+    <div class="success-order-row"><span class="label">Total</span><span class="value">${priceStr}</span></div>
+    <div class="success-order-row"><span class="label">E-mail</span><span class="value">${order.user_email}</span></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// PIX COPY
+// ═══════════════════════════════════════════════════
+window.copyPix = function() {
+  navigator.clipboard.writeText('firecoding@pix.com.br').then(() => {
+    showToast('Chave PIX copiada! ✅', 'success');
+  });
+};
+
+// ═══════════════════════════════════════════════════
+// MÁSCARAS
+// ═══════════════════════════════════════════════════
+function setupMasks() {
+  // Telefone
+  document.getElementById('fPhone')?.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'');
+    if (v.length > 11) v = v.slice(0,11);
+    if (v.length > 6) v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    else if (v.length > 2) v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    this.value = v;
+  });
+
+  // CPF / CNPJ
+  document.getElementById('fDoc')?.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'');
+    if (v.length <= 11) {
+      v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+      v = v.slice(0,14).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    }
+    this.value = v;
+  });
+
+  // Card number
+  document.getElementById('fCardNum')?.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').slice(0,16);
+    v = v.replace(/(.{4})/g,'$1 ').trim();
+    this.value = v;
+  });
+
+  // Card expiry
+  document.getElementById('fCardExp')?.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').slice(0,4);
+    if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+    this.value = v;
+  });
+
+  // CVV
+  document.getElementById('fCardCvv')?.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g,'').slice(0,4);
+  });
+
+  // Card name uppercase
+  document.getElementById('fCardName')?.addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.add('exit'); setTimeout(() => t.remove(), 350); }, 3500);
+}
+</script>
+</body>
+</html>
