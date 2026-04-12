@@ -175,6 +175,8 @@
   <a class="nav-item" onclick="showPanel('leads',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Leads</a>
   <div class="sidebar-section">Site</div>
+  <a class="nav-item" onclick="showPanel('banners',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 2H8l-2 5h12l-2-5z"/></svg>Banners Hero</a>
   <a class="nav-item" href="index.html" target="_blank">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver Catálogo</a>
   <div class="sidebar-footer">
@@ -298,6 +300,19 @@
       </table></div>
     </div>
 
+    <!-- ── BANNERS HERO ── -->
+    <div class="panel" id="panelBanners">
+      <div class="section-header">
+        <h2>Banners Hero</h2>
+        <button class="btn btn-primary" onclick="openBannerModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Banner
+        </button>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.5rem">Os banners aparecem no carrossel da hero do site. Arraste para reordenar (campo <code style="font-size:0.75rem;background:var(--dark-surface);padding:0.1rem 0.35rem;border-radius:4px">ordem</code>). Apenas banners <strong>Ativos</strong> são exibidos.</p>
+      <div id="bannersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem"></div>
+    </div>
+
   </div>
 </main>
 
@@ -337,6 +352,62 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeCardModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="saveCard()">Salvar Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: BANNER HERO -->
+<div class="modal-overlay" id="bannerModal" onclick="if(event.target===this)closeBannerModal()">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="closeBannerModal()">✕</button>
+    <h3 id="bannerModalTitle">Novo Banner Hero</h3>
+    <input type="hidden" id="bannerId">
+    <div class="form-row">
+      <div class="form-field"><label>Tag (tipo)</label>
+        <select id="bannerTag">
+          <option value="destaque">🔥 Destaque</option>
+          <option value="promo">🏷️ Promoção</option>
+          <option value="novo">✨ Novo</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Rótulo da Tag</label>
+        <input type="text" id="bannerTagLabel" placeholder="Ex: 🏷️ Promoção">
+      </div>
+    </div>
+    <div class="form-field"><label>Título (use \n para quebrar linha)</label>
+      <input type="text" id="bannerTitle" placeholder="Ex: Landing Pages\na partir de\nR$ 297">
+    </div>
+    <div class="form-field"><label>Descrição</label>
+      <textarea id="bannerDesc" placeholder="Texto de apoio do banner..." style="height:70px"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Botão Principal — Texto</label><input type="text" id="bannerBtn" placeholder="Ver Catálogo"></div>
+      <div class="form-field"><label>Botão Principal — URL</label><input type="text" id="bannerBtnUrl" placeholder="#catalogo"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Botão 2 — Texto (opcional)</label><input type="text" id="bannerBtn2" placeholder="Falar no WhatsApp"></div>
+      <div class="form-field"><label>Botão 2 — URL</label><input type="text" id="bannerBtn2Url" placeholder="https://wa.me/..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Preço Antigo (opcional)</label><input type="text" id="bannerPriceOld" placeholder="R$ 497"></div>
+      <div class="form-field"><label>Preço Novo (opcional)</label><input type="text" id="bannerPriceNew" placeholder="R$ 297"></div>
+    </div>
+    <div class="form-field"><label>Emoji (se sem imagem)</label><input type="text" id="bannerEmoji" placeholder="🚀" style="width:80px"></div>
+    <div class="form-field">
+      <label>Imagem (URL)</label>
+      <input type="url" id="bannerImg" placeholder="https://..." oninput="previewBannerImg(this.value)">
+      <div class="url-preview" id="bannerImgPreview"><img id="bannerImgPrevImg" src="" onerror="this.style.display='none'"><span>Pré-visualização</span></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Ordem</label><input type="number" id="bannerOrdem" value="0" min="0" style="width:80px"></div>
+      <div class="form-field" style="display:flex;align-items:center;gap:0.6rem;padding-top:1.4rem">
+        <input type="checkbox" id="bannerActive" checked style="width:16px;height:16px;accent-color:var(--fire-orange)">
+        <label for="bannerActive" style="margin:0;cursor:pointer">Ativo (visível no site)</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBannerModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBanner()">Salvar Banner</button>
     </div>
   </div>
 </div>
@@ -873,6 +944,155 @@ function showToast(msg, type='success') {
   t.textContent = msg; t.className = 'toast ' + type; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3500);
 }
+
+// ============================================================
+// BANNERS HERO CRUD
+// ============================================================
+let _banners = [];
+
+panelNames['banners'] = 'Banners Hero';
+
+async function loadBanners() {
+  const { data } = await _sb.from('hero_banners').select('*').order('ordem', { ascending: true });
+  _banners = data || [];
+  renderBannersGrid();
+}
+
+function renderBannersGrid() {
+  const grid = document.getElementById('bannersGrid');
+  if (!grid) return;
+  if (!_banners.length) {
+    grid.innerHTML = '<div style="color:var(--text-muted);padding:2rem 0;grid-column:1/-1">Nenhum banner cadastrado. Clique em "Novo Banner".</div>';
+    return;
+  }
+  grid.innerHTML = _banners.map(b => {
+    const tagColor = b.tag === 'promo' ? '#34d399' : b.tag === 'novo' ? '#a5b4fc' : 'var(--fire-orange)';
+    const statusBadge = b.active
+      ? '<span style="font-size:0.65rem;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);padding:0.15rem 0.5rem;border-radius:20px;font-weight:700">● Ativo</span>'
+      : '<span style="font-size:0.65rem;background:rgba(123,123,144,0.15);color:var(--text-muted);border:1px solid var(--dark-border);padding:0.15rem 0.5rem;border-radius:20px;font-weight:700">○ Inativo</span>';
+    const preview = b.image_url
+      ? `<img src="${b.image_url}" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:0.8rem" onerror="this.style.display='none'">`
+      : `<div style="width:100%;height:110px;border-radius:8px;background:linear-gradient(135deg,rgba(255,94,26,0.1),rgba(229,58,26,0.05));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin-bottom:0.8rem">${b.emoji || '🔥'}</div>`;
+    return `<div style="background:var(--dark-card);border:1px solid var(--dark-border);border-radius:12px;padding:1rem;transition:border-color 0.2s" onmouseenter="this.style.borderColor='rgba(255,94,26,0.3)'" onmouseleave="this.style.borderColor='var(--dark-border)'">
+      ${preview}
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+        <span style="font-size:0.65rem;font-weight:700;color:${tagColor};text-transform:uppercase">${b.tag_label || b.tag}</span>
+        <span style="margin-left:auto">${statusBadge}</span>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;margin-bottom:0.3rem;line-height:1.3">${(b.title||'').replace(/\\n/g,' / ')}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.7rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${b.description||''}</div>
+      <div style="display:flex;gap:0.4rem;align-items:center">
+        <span style="font-size:0.72rem;color:var(--text-dim)">Ordem: ${b.ordem ?? 0}</span>
+        <div style="margin-left:auto;display:flex;gap:0.4rem">
+          <button class="btn btn-ghost" style="font-size:0.72rem;padding:0.25rem 0.6rem" onclick="openEditBanner('${b.id}')">✏️ Editar</button>
+          <button class="btn btn-danger" style="font-size:0.72rem;padding:0.25rem 0.6rem" onclick="deleteBanner('${b.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openBannerModal() {
+  document.getElementById('bannerModalTitle').textContent = 'Novo Banner Hero';
+  document.getElementById('bannerId').value = '';
+  document.getElementById('bannerTag').value = 'destaque';
+  document.getElementById('bannerTagLabel').value = '';
+  document.getElementById('bannerTitle').value = '';
+  document.getElementById('bannerDesc').value = '';
+  document.getElementById('bannerBtn').value = 'Ver Catálogo';
+  document.getElementById('bannerBtnUrl').value = '#catalogo';
+  document.getElementById('bannerBtn2').value = '';
+  document.getElementById('bannerBtn2Url').value = '';
+  document.getElementById('bannerPriceOld').value = '';
+  document.getElementById('bannerPriceNew').value = '';
+  document.getElementById('bannerEmoji').value = '🔥';
+  document.getElementById('bannerImg').value = '';
+  document.getElementById('bannerOrdem').value = _banners.length;
+  document.getElementById('bannerActive').checked = true;
+  document.getElementById('bannerImgPrevImg').src = '';
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+function openEditBanner(id) {
+  const b = _banners.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bannerModalTitle').textContent = 'Editar Banner';
+  document.getElementById('bannerId').value = b.id;
+  document.getElementById('bannerTag').value = b.tag || 'destaque';
+  document.getElementById('bannerTagLabel').value = b.tag_label || '';
+  document.getElementById('bannerTitle').value = b.title || '';
+  document.getElementById('bannerDesc').value = b.description || '';
+  document.getElementById('bannerBtn').value = b.btn_label || '';
+  document.getElementById('bannerBtnUrl').value = b.btn_url || '';
+  document.getElementById('bannerBtn2').value = b.btn2_label || '';
+  document.getElementById('bannerBtn2Url').value = b.btn2_url || '';
+  document.getElementById('bannerPriceOld').value = b.price_old || '';
+  document.getElementById('bannerPriceNew').value = b.price_new || '';
+  document.getElementById('bannerEmoji').value = b.emoji || '🔥';
+  document.getElementById('bannerImg').value = b.image_url || '';
+  document.getElementById('bannerOrdem').value = b.ordem ?? 0;
+  document.getElementById('bannerActive').checked = !!b.active;
+  previewBannerImg(b.image_url || '');
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+function closeBannerModal() {
+  document.getElementById('bannerModal').classList.remove('open');
+}
+
+function previewBannerImg(url) {
+  const img = document.getElementById('bannerImgPrevImg');
+  img.src = url;
+  img.style.display = url ? 'block' : 'none';
+}
+
+async function saveBanner() {
+  const id    = document.getElementById('bannerId').value;
+  const tag   = document.getElementById('bannerTag').value;
+  const payload = {
+    tag,
+    tag_label:   document.getElementById('bannerTagLabel').value || { destaque:'🔥 Destaque', promo:'🏷️ Promoção', novo:'✨ Novo' }[tag],
+    title:       document.getElementById('bannerTitle').value.trim(),
+    description: document.getElementById('bannerDesc').value.trim(),
+    btn_label:   document.getElementById('bannerBtn').value.trim(),
+    btn_url:     document.getElementById('bannerBtnUrl').value.trim(),
+    btn2_label:  document.getElementById('bannerBtn2').value.trim() || null,
+    btn2_url:    document.getElementById('bannerBtn2Url').value.trim() || null,
+    price_old:   document.getElementById('bannerPriceOld').value.trim() || null,
+    price_new:   document.getElementById('bannerPriceNew').value.trim() || null,
+    emoji:       document.getElementById('bannerEmoji').value.trim() || '🔥',
+    image_url:   document.getElementById('bannerImg').value.trim() || null,
+    ordem:       parseInt(document.getElementById('bannerOrdem').value) || 0,
+    active:      document.getElementById('bannerActive').checked,
+  };
+  if (!payload.title) { showToast('Título é obrigatório.', 'error'); return; }
+  let error;
+  if (id) {
+    ({ error } = await _sb.from('hero_banners').update(payload).eq('id', id));
+  } else {
+    ({ error } = await _sb.from('hero_banners').insert(payload));
+  }
+  if (error) { showToast('Erro ao salvar: ' + error.message, 'error'); return; }
+  showToast(id ? '✅ Banner atualizado!' : '✅ Banner criado!', 'success');
+  addLog((id ? 'Editou' : 'Criou') + ' banner: ' + payload.title);
+  closeBannerModal();
+  await loadBanners();
+}
+
+async function deleteBanner(id) {
+  if (!confirm('Remover este banner?')) return;
+  await _sb.from('hero_banners').delete().eq('id', id);
+  showToast('🗑️ Banner removido.', 'success');
+  addLog('Removeu um banner hero');
+  await loadBanners();
+}
+
+// Carrega banners ao abrir o painel
+const _origShowPanel = showPanel;
+window.showPanel = function(name, el) {
+  _origShowPanel(name, el);
+  if (name === 'banners') loadBanners();
+};
 
 init();
 </script>
