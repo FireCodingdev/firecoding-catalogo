@@ -1710,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
           first ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
           first = false;
         }
-        const alpha = 0.025 + 0.09 * depth * depth;
+        const alpha = 0.025 + 0.29 * depth * depth;
         ctx.strokeStyle = COLOR_LINE + alpha + ')';
         ctx.lineWidth = 0.7;
         ctx.stroke();
