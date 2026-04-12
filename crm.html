@@ -545,19 +545,46 @@ async function saveCard() {
   const price = document.getElementById('cardPrice').value.trim();
   if (!title || !price) { showToast('Preencha título e preço.', 'error'); return; }
   const img = document.getElementById('cardImg').value.trim();
-  const payload = {
-    title, price, tags: _tags,
-    category: document.getElementById('cardCat').value,
-    description: document.getElementById('cardDesc').value.trim(),
-    badge: document.getElementById('cardBadge').value,
-    cover_url: img, images: img ? [img] : []
-  };
+
   if (id) {
+    // EDITAR: preserva images e mockup_images existentes;
+    // só atualiza cover_url. Se o admin mudou a img de capa,
+    // atualiza também o primeiro item do array images.
+    const existing = _cards.find(x => x.id === id);
+    const existingImages  = existing?.images       || [];
+    const existingMockups = existing?.mockup_images || [];
+
+    // Atualiza apenas o cover_url e, se houver nova URL de capa,
+    // substitui/insere no índice 0 do array images sem apagar os demais.
+    let newImages = [...existingImages];
+    if (img) {
+      newImages[0] = img;
+    }
+
+    const payload = {
+      title, price, tags: _tags,
+      category:    document.getElementById('cardCat').value,
+      description: document.getElementById('cardDesc').value.trim(),
+      badge:       document.getElementById('cardBadge').value,
+      cover_url:   img || existing?.cover_url || '',
+      images:      newImages.length ? newImages : existingImages,
+      mockup_images: existingMockups,   // preserva explicitamente
+    };
     const { error } = await _sb.from('catalog_cards').update(payload).eq('id', id);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
     addLog('Editou o card "' + title + '"');
   } else {
-    const { error } = await _sb.from('catalog_cards').insert({ ...payload, mockup_images: [] });
+    // NOVO CARD
+    const payload = {
+      title, price, tags: _tags,
+      category:    document.getElementById('cardCat').value,
+      description: document.getElementById('cardDesc').value.trim(),
+      badge:       document.getElementById('cardBadge').value,
+      cover_url:   img,
+      images:      img ? [img] : [],
+      mockup_images: [],
+    };
+    const { error } = await _sb.from('catalog_cards').insert(payload);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
     addLog('Criou o card "' + title + '"');
   }
