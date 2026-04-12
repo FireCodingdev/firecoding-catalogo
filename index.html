@@ -974,8 +974,16 @@
   // ── DESKTOP: load image into phone mockup ──────────────────────────────────
   window.loadPhonePreview = function (event, btn) {
     event.preventDefault();
-    const title  = btn.getAttribute('data-title') || 'Modelo';
-    const imgSrc = btn.getAttribute('data-img')   || '';
+    const title       = btn.getAttribute('data-title')        || 'Modelo';
+    const imgSrc      = btn.getAttribute('data-img')          || '';
+    const redirectUrl = btn.getAttribute('data-redirect-url') || '';
+    const hasMockup   = btn.getAttribute('data-has-mockup')   === '1';
+
+    // Se não há imagens de mockup mas há URL de redirect, abre o link diretamente
+    if (!hasMockup && redirectUrl) {
+      window.open(redirectUrl, '_blank');
+      return;
+    }
 
     if (isMobile()) {
       const price = btn.getAttribute('data-price') || '';
@@ -1369,7 +1377,9 @@ async function loadCatalogCards(filterCat = 'todos') {
     // Imagem do card (catálogo) — campo cover_url ou images[0]
     const imgSrc    = card.cover_url || (Array.isArray(card.images) && card.images[0]) || '';
     // Imagem do mockup/celular — campo mockup_images[0], fallback para imgSrc
-    const mockupSrc = (Array.isArray(card.mockup_images) && card.mockup_images[0]) || imgSrc;
+    const hasMockupImages = Array.isArray(card.mockup_images) && card.mockup_images.filter(Boolean).length > 0;
+    const mockupSrc = hasMockupImages ? card.mockup_images.filter(Boolean)[0] : imgSrc;
+    const redirectUrl = card.mockup_redirect_url || '';
     // Todas as imagens do card para a galeria do modal
     const allImages = Array.isArray(card.images) ? card.images.filter(Boolean) : (imgSrc ? [imgSrc] : []);
     const imagesJson = JSON.stringify(allImages).replace(/"/g, '&quot;');
@@ -1397,6 +1407,8 @@ async function loadCatalogCards(filterCat = 'todos') {
               data-price="R$ ${card.price || ''}"
               data-badge="${card.badge || ''}"
               data-img="${mockupSrc}"
+              data-redirect-url="${redirectUrl}"
+              data-has-mockup="${hasMockupImages ? '1' : '0'}"
               onclick="event.stopPropagation();loadPhonePreview(event,this)">
               ${previewSVG}Ver Preview
             </a>
